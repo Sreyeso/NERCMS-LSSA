@@ -1,24 +1,25 @@
 # CODEOWNERS for NERCMS-LSSA
 # Notes:
-# - Replace placeholder usernames with real GitHub usernames.
-# - This repository is not in an organization, so use individual users (@username).
+# - Use real GitHub usernames directly (@username).
+# - Keep unknown owners commented until they exist to avoid invalid-owner warnings.
 
 # Team leaders
-# @leader_2a = @Sreyeso
-# @leader_2b = leader of equipo-2b
-# @leader_2c = leader of equipo-2c
-# @leader_2d = leader of equipo-2d
-# @leader_2e = leader of equipo-2e
+# 2a: @Sreyeso
+# 2b: (pending)
+# 2c: (pending)
+# 2d: @sespinosab
+# 2e: @dbustos106 (uncomment when ready)
 
 # Default ownership for root/shared files.
-* @leader_2a @leader_2b @leader_2c @leader_2d @leader_2e
+* @Sreyeso @sespinosab
 
 # Shared metamodel affects all teams.
-/metamodel.tx @leader_2a @leader_2b @leader_2c @leader_2d @leader_2e
+/metamodel.tx @Sreyeso @sespinosab
+# /metamodel.tx @dbustos106
 
 # Team-specific ownership rules.
-/team-2a/ @leader_2a
-/team-2b/ @leader_2b
-/team-2c/ @leader_2c
-/team-2d/ @leader_2d
-/team-2e/ @leader_2e
+/team-2a/ @Sreyeso
+# /team-2b/ @<pending-username>
+# /team-2c/ @<pending-username>
+/team-2d/ @sespinosab
+# /team-2e/ @dbustos106
