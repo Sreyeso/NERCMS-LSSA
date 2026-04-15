@@ -1,8 +1,15 @@
 Model: 
     'system_of_systems' name=ID ':' 
-        subsystems*=Subsystem
-        sos_connectors*=Connector 
+        elements*=ModelElement
 ; 
+
+ModelElement:
+    Subsystem | Connector | Comment
+;
+
+Comment:
+    /\/\/.*$/
+;
 
 // Support for SoS modeling
 Subsystem:
@@ -12,7 +19,7 @@ Subsystem:
 ;
 
 Element: 
-    Component | Connector 
+    Component | Connector | Comment
 ; 
 
 Component: 
@@ -49,11 +56,19 @@ ComponentType:
     'external_agency'   
 ; 
 
+Connectable:
+    Component | Subsystem
+;
+
 // Enriched connectors with protocol information
 Connector: 
-    'connector' type=ConnectorType from=[Component] '->' to=[Component] 
+    'connector' type=ConnectorType from=[Connectable|FQN] '->' to=[Connectable|FQN] 
     (properties=ConnectorProperties)?
 ; 
+
+FQN:
+    ID ('.' ID)*
+;
 
 ConnectorType: 
     'data_stream'       | 
@@ -70,7 +85,7 @@ ConnectorProperties:
 ; 
 
 ProtocolType:
-   'Tcp' | 'WebSockets' | 'Http' | 'gRPC' |'MQTT' | 'AMQP' 
+    'Tcp' | 'WebSockets' | 'Http' | 'gRPC' |'MQTT' | 'AMQP' | 'REST'
 ;
 
 InteractionSyte:
