@@ -4,10 +4,8 @@ system_of_systems Rescue :
         component BrokerIn : communication event_broker 
         component Controller : logic microservice
         component Blackboard : logic domain_service
-        component Audit : logic microservice 
         component Health : logic microservice
         component BrokerOut : communication event_broker
-        component Audit_Db : data database
         component Recovery_Db : data database
         connector data_stream Gateway -> BrokerIn { style = MessageQueue  protocol = AMQP }
         connector event_notification BrokerIn -> Controller { style = MessageQueue protocol = AMQP }
@@ -15,7 +13,6 @@ system_of_systems Rescue :
         connector dependency Controller -> Blackboard { style = RequestResponse protocol = Http }
         connector control_command Controller -> BrokerOut { style = Pub/Sub protocol = Tcp }
         connector dependency Blackboard -> Recovery_Db 
-        connector dependency Audit -> Audit_Db
         connector event_notification BrokerOut -> Audit { style = Pub/Sub protocol = Tcp }
     }
     subsystem externalSystems{
@@ -32,6 +29,11 @@ system_of_systems Rescue :
         connector event_notification BrokerOut -> Medics { style = Pub/Sub protocol = Tcp }
         connector event_notification BrokerOut -> Rescue { style = Pub/Sub protocol = Tcp }
     }
+    subsystem audit {
+        component Audit : logic microservice 
+        component Audit_Db : data database
+        connector dependency Audit -> Audit_Db
+    }
     subsystem s5 {
         component system5 : communication api_gateway
         connector data_stream system5 -> BrokerIn { style = MessageQueue  protocol = AMQP }
@@ -40,4 +42,8 @@ system_of_systems Rescue :
     subsystem s2 {
         connector data_stream system2 -> BrokerIn { style = MessageQueue  protocol = AMQP }
         component system2 : communication api_gateway
+    }
+    subsystem s3 {
+        connector data_stream system3 -> BrokerIn { style = MessageQueue  protocol = AMQP }
+        component system3 : communication api_gateway
     }
