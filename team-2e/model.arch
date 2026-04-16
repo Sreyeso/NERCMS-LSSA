@@ -1,69 +1,62 @@
-system_of_systems NERCMS_Group2 :
+subsystem data_acquisition_edge {
 
-    subsystem data_acquisition_edge {
+    component edge_node_regional : edge edge_node { tech="container-runtime" }
 
-        component edge_node_regional : edge edge_node { tech="container-runtime" }
+    component hydro_sensor    : physical sensor { tech="hydrological-station" }
+    component seismic_sensor  : physical sensor { tech="seismograph" }
+    component atmo_sensor     : physical sensor { tech="weather-station" }
+    component camera          : physical sensor { tech="ip-camera-rtsp" }
 
-        component hydro_sensor    : physical sensor { tech="hydrological-station" }
-        component seismic_sensor  : physical sensor { tech="seismograph" }
-        component atmo_sensor     : physical sensor { tech="weather-station" }
-        component camera          : physical sensor { tech="ip-camera-rtsp" }
+    component data_ingestion_ms       : logic microservice { tech="python-flask" port=8101 }
+    component data_standarization_ms  : logic microservice { tech="python-flask" port=8102 }
+    component publisher               : logic microservice { tech="python-flask" port=8103 }
 
-        component data_ingestion_ms       : logic microservice { tech="python-flask" port=8101 }
-        component data_standarization_ms  : logic microservice { tech="python-flask" port=8102 }
-        component publisher               : logic microservice { tech="python-flask" port=8103 }
+    component db_raw_data_storage            : data database  { tech="postgresql" port=5432 }
+    component bucket_raw_files_storage       : data data_lake { tech="minio" port=9000 }
+    component processed_data_db              : data database  { tech="postgresql" port=5433 }
+    component bucket_processing_file_storage : data data_lake { tech="minio" port=9001 }
+    component file_storage_metadata          : data database  { tech="postgresql" port=5434 }
 
-        component db_raw_data_storage            : data database  { tech="postgresql" port=5432 }
-        component bucket_raw_files_storage       : data data_lake { tech="minio" port=9000 }
-        component processed_data_db              : data database  { tech="postgresql" port=5433 }
-        component bucket_processing_file_storage : data data_lake { tech="minio" port=9001 }
-        component file_storage_metadata          : data database  { tech="postgresql" port=5434 }
+    component processing_unit_ms  : logic microservice        { tech="python-flask" port=8200 }
+    component topology_status_db  : data database              { tech="postgresql"  port=5435 }
+    component report_db           : data database              { tech="postgresql"  port=5436 }
+    component operator_frontend   : presentation web_ui        { tech="react"       port=3000 }
+    component interface_gateway   : communication api_gateway  { tech="nginx"       port=8080 }
+    component client_web_browser  : presentation web_ui        { tech="web-browser" }
 
-        component processing_unit_ms  : logic microservice        { tech="python-flask" port=8200 }
-        component topology_status_db  : data database              { tech="postgresql"  port=5435 }
-        component report_db           : data database              { tech="postgresql"  port=5436 }
-        component operator_frontend   : presentation web_ui        { tech="react"       port=3000 }
-        component interface_gateway   : communication api_gateway  { tech="nginx"       port=8080 }
-        component client_web_browser  : presentation web_ui        { tech="web-browser" }
+    connector data_stream hydro_sensor   -> data_ingestion_ms { protocol=MQTT }
+    connector data_stream seismic_sensor -> data_ingestion_ms { protocol=MQTT }
+    connector data_stream atmo_sensor    -> data_ingestion_ms { protocol=MQTT }
+    connector data_stream camera         -> data_ingestion_ms { protocol=WebSockets }
 
-        connector data_stream hydro_sensor   -> data_ingestion_ms { protocol=MQTT }
-        connector data_stream seismic_sensor -> data_ingestion_ms { protocol=MQTT }
-        connector data_stream atmo_sensor    -> data_ingestion_ms { protocol=MQTT }
-        connector data_stream camera         -> data_ingestion_ms { protocol=WebSockets }
+    connector event_notification data_ingestion_ms       -> data_standarization_ms { style=MessageQueue protocol=AMQP }
+    connector event_notification data_standarization_ms  -> publisher              { style=MessageQueue protocol=AMQP }
 
-        connector event_notification data_ingestion_ms       -> data_standarization_ms { style=MessageQueue protocol=AMQP }
-        connector event_notification data_standarization_ms  -> publisher              { style=MessageQueue protocol=AMQP }
+    connector dependency data_ingestion_ms -> db_raw_data_storage
+    connector dependency data_ingestion_ms -> bucket_raw_files_storage
+    connector dependency data_ingestion_ms -> file_storage_metadata
 
-        connector dependency data_ingestion_ms -> db_raw_data_storage
-        connector dependency data_ingestion_ms -> bucket_raw_files_storage
-        connector dependency data_ingestion_ms -> file_storage_metadata
+    connector dependency data_standarization_ms -> processed_data_db
+    connector dependency data_standarization_ms -> bucket_processing_file_storage
+    connector dependency data_standarization_ms -> file_storage_metadata
 
-        connector dependency data_standarization_ms -> processed_data_db
-        connector dependency data_standarization_ms -> bucket_processing_file_storage
-        connector dependency data_standarization_ms -> file_storage_metadata
+    connector dependency data_standarization_ms -> db_raw_data_storage
+    connector dependency data_standarization_ms -> bucket_raw_files_storage
 
-        connector dependency data_standarization_ms -> db_raw_data_storage
-        connector dependency data_standarization_ms -> bucket_raw_files_storage
+    connector dependency publisher -> processed_data_db
+    connector dependency publisher -> bucket_processing_file_storage
 
-        connector dependency publisher -> processed_data_db
-        connector dependency publisher -> bucket_processing_file_storage
+    connector data_stream data_standarization_ms -> interface_gateway   { style=RequestResponse protocol=Http }
 
-        connector data_stream data_standarization_ms -> interface_gateway   { style=RequestResponse protocol=Http }
+    connector data_stream interface_gateway     -> processing_unit_ms { style=RequestResponse protocol=Http }
+    connector data_stream processing_unit_ms    -> interface_gateway  { style=RequestResponse protocol=Http }
+    connector data_stream operator_frontend     -> processing_unit_ms { style=RequestResponse protocol=Http }
+    connector data_stream client_web_browser    -> operator_frontend  { style=RequestResponse protocol=Http }
+    connector dependency  processing_unit_ms -> topology_status_db
+    connector dependency  processing_unit_ms -> report_db
+}
 
-        connector data_stream interface_gateway     -> processing_unit_ms { style=RequestResponse protocol=Http }
-        connector data_stream processing_unit_ms    -> interface_gateway  { style=RequestResponse protocol=Http }
-        connector data_stream operator_frontend     -> processing_unit_ms { style=RequestResponse protocol=Http }
-        connector data_stream client_web_browser    -> operator_frontend  { style=RequestResponse protocol=Http }
-        connector dependency  processing_unit_ms -> topology_status_db
-        connector dependency  processing_unit_ms -> report_db
-    }
-
-    subsystem sos_frontier {
-        component s2_early_warning : communication external_agency
-        component s5_c4i           : communication external_agency
-    }
-
-    connector event_notification publisher          -> s2_early_warning { style=MessageQueue protocol=AMQP }
-    connector event_notification publisher          -> s5_c4i           { style=MessageQueue protocol=AMQP }
-    connector data_stream        interface_gateway  -> s2_early_warning { style=RequestResponse protocol=Http }
-    connector data_stream        interface_gateway  -> s5_c4i           { style=RequestResponse protocol=Http }
+connector event_notification data_acquisition_edge.publisher          -> s2 { style=MessageQueue protocol=AMQP }
+connector event_notification data_acquisition_edge.publisher          -> s5 { style=MessageQueue protocol=AMQP }
+connector data_stream        data_acquisition_edge.interface_gateway  -> s2 { style=RequestResponse protocol=Http }
+connector data_stream        data_acquisition_edge.interface_gateway  -> s5 { style=RequestResponse protocol=Http }
