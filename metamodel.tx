@@ -30,8 +30,14 @@ Component:
 // Attributes, easily extensibles
 ComponentProperties:
     '{'
-        ('tech' '=' tech=STRING)?
-        ('port' '=' port=INT)?
+        ('availability' '=' availability = AvailabilityLevel)?
+        ('performance'  '=' performance  = PerformanceLevel)?
+        ('security'     '=' security     = SecurityLevel)?
+        ('replicas'     '=' replicas     = INT)?
+        ('mem_limit'    '=' mem_limit    = STRING)?
+        ('cpu_limit'    '=' cpu_limit    = FLOAT)?
+        ('tech'         '=' tech         = STRING)?
+        ('port'         '=' port         = INT)?
     '}'
 ;
 
@@ -79,8 +85,11 @@ ConnectorType:
 
 ConnectorProperties:
     '{'
-        ('style' '=' style=InteractionSyte)?
-        ('protocol' '=' protocol=ProtocolType)?
+        ('style'      '=' style      = InteractionSyte)?
+        ('protocol'   '=' protocol   = ProtocolType)?
+        ('timeout_ms' '=' timeout_ms = INT)?
+        ('encrypted'  '=' encrypted  = BOOL)?
+        ('rate_limit' '=' rate_limit = INT)?
     '}'
 ; 
 
@@ -90,4 +99,16 @@ ProtocolType:
 
 InteractionSyte:
     'RequestResponse' | 'MessageQueue' | 'Pub/Sub'
+;
+
+AvailabilityLevel:
+    'critical' | 'high' | 'standard'
+;
+
+PerformanceLevel:
+    'realtime' | 'interactive' | 'batch'
+;
+
+SecurityLevel:
+    'restricted' | 'internal' | 'public'
 ;
