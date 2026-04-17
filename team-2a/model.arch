@@ -37,3 +37,8 @@ subsystem externalSystems{
     connector event_notification s4.BrokerOut -> Medics { style = Pub/Sub protocol = Tcp encrypted = true }
     connector event_notification s4.BrokerOut -> Rescue { style = Pub/Sub protocol = Tcp encrypted = true }
 }
+
+connector event_notification s2 -> s4.BrokerIn {style = MessageQueue protocol = Tcp encrypted = true }
+connector event_notification s5 -> s4.BrokerIn { style = MessageQueue protocol = Tcp encrypted = true }
+connector event_notification s3 -> s4.BrokerIn { style = MessageQueue protocol = Tcp encrypted = true }
+
