@@ -31,6 +31,7 @@ Component:
 ComponentProperties:
     '{'
         ('availability' '=' availability = AvailabilityLevel)?
+        ('recoverability' '=' recoverability = RecoverabilityLevel)?
         ('performance'  '=' performance  = PerformanceLevel)?
         ('security'     '=' security     = SecurityLevel)?
         ('replicas'     '=' replicas     = INT)?
@@ -111,4 +112,8 @@ PerformanceLevel:
 
 SecurityLevel:
     'restricted' | 'internal' | 'public'
+;
+
+RecoverabilityLevel:
+    'fast' | 'normal' | 'manual'
 ;

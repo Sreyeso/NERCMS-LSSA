@@ -80,15 +80,15 @@ system_of_systems NERCMS_SoS :
     // SYSTEM 4 (Team 2A)
     // =============================================================
     subsystem s4 {
-        component Gateway : communication api_gateway { availability = critical performance = realtime security = internal replicas = 2}
-        component BrokerIn : communication event_broker { availability = critical performance = realtime security = public }
-        component Controller : logic microservice { availability = high performance = batch security = restricted }
-        component Blackboard : logic domain_service { availability = standard performance = batch security = restricted }
-        component Audit : logic microservice  { availability = standard performance = batch security = restricted }
-        component Health : logic microservice { availability = standard performance = batch security = restricted }
-        component BrokerOut : communication event_broker { availability = critical performance = realtime security = public }
-        component Audit_Db : data database { availability = standard performance = batch security = restricted }
-        component Recovery_Db : data database { availability = standard performance = batch security = restricted }
+        component Gateway : communication api_gateway { availability = critical recoverability = fast performance = realtime security = internal replicas = 2}
+        component BrokerIn : communication event_broker { availability = critical recoverability = fast performance = realtime security = public }
+        component Controller : logic microservice { availability = high recoverability = fast performance = batch security = restricted }
+        component Blackboard : logic domain_service { availability = standard recoverability = normal performance = batch security = restricted }
+        component Audit : logic microservice  { availability = standard recoverability = normal performance = batch security = restricted }
+        component Health : logic microservice { availability = standard recoverability = fast performance = batch security = restricted }
+        component BrokerOut : communication event_broker { availability = critical recoverability = fast performance = realtime security = public }
+        component Audit_Db : data database { availability = standard recoverability = normal performance = batch security = restricted }
+        component Recovery_Db : data database { availability = standard recoverability = normal performance = batch security = restricted }
 
         connector data_stream Gateway -> BrokerIn { style = MessageQueue  protocol = AMQP encrypted = true }
         connector event_notification BrokerIn -> Controller { style = MessageQueue protocol = AMQP encrypted = true}
