@@ -1,5 +1,5 @@
 subsystem s4 {
-    component Gateway : communication api_gateway { availability = critical recoverability = fast performance = realtime security = internal replicas = 2}
+    component Gateway : communication api_gateway { availability = critical recoverability = fast performance = realtime security = internal min_replicas = 2}
     component BrokerIn : communication event_broker { availability = critical recoverability = fast performance = realtime security = public }
     component Controller : logic microservice { availability = high recoverability = fast performance = batch security = restricted }
     component Blackboard : logic domain_service { availability = standard recoverability = normal performance = batch security = restricted }
