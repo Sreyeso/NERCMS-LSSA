@@ -30,15 +30,17 @@ Component:
 // Attributes, easily extensibles
 ComponentProperties:
     '{'
-        ('availability' '=' availability = AvailabilityLevel)?
+        ('availability'   '=' availability   = AvailabilityLevel)?
         ('recoverability' '=' recoverability = RecoverabilityLevel)?
-        ('performance'  '=' performance  = PerformanceLevel)?
-        ('security'     '=' security     = SecurityLevel)?
-        ('replicas'     '=' replicas     = INT)?
-        ('mem_limit'    '=' mem_limit    = STRING)?
-        ('cpu_limit'    '=' cpu_limit    = FLOAT)?
-        ('tech'         '=' tech         = STRING)?
-        ('port'         '=' port         = INT)?
+        ('performance'    '=' performance    = PerformanceLevel)?
+        ('auth'           '=' auth           = AuthLevel)?
+        ('security'       '=' security       = SecurityLevel)?
+        ('min_replicas'   '=' replicas       = INT)?
+        ('max_replicas'   '=' replicas       = INT)?
+        ('mem_limit'      '=' mem_limit      = STRING)?
+        ('cpu_limit'      '=' cpu_limit      = FLOAT)?
+        ('tech'           '=' tech           = STRING)?
+        ('port'           '=' port           = INT)?
     '}'
 ;
 
@@ -49,6 +51,7 @@ TierType:
 // Generalised but still adapted to critical infrastructure context
 ComponentType: 
     'web_ui'          | 
+    'interface'       | 
     'mobile_app'      | 
     'api_gateway'     | 
     'microservice'    | 
@@ -57,6 +60,7 @@ ComponentType:
     'dashboard'       | 
     'database'        | 
     'data_lake'       | 
+    'bucket'          | 
     'edge_node'       | 
     'sensor'          | 
     'actuator'        |
@@ -78,15 +82,15 @@ FQN:
 ;
 
 ConnectorType: 
-    'data_stream'       | 
-    'control_command'   | 
-    'event_notification'| 
+    'data_stream'           | 
+    'control_command'       | 
+    'event_notification'    | 
     'dependency' 
 ;
 
 ConnectorProperties:
     '{'
-        ('style'      '=' style      = InteractionSyte)?
+        ('style'      '=' style      = InteractionStyle)?
         ('protocol'   '=' protocol   = ProtocolType)?
         ('timeout_ms' '=' timeout_ms = INT)?
         ('encrypted'  '=' encrypted  = BOOL)?
@@ -95,10 +99,10 @@ ConnectorProperties:
 ; 
 
 ProtocolType:
-    'Tcp' | 'WebSockets' | 'Http' | 'gRPC' |'MQTT' | 'AMQP' | 'REST'
+    'Tcp' | 'WebSockets' | 'Http' | 'gRPC' |'MQTT' | 'AMQP' | 'REST' | 'RTCP'
 ;
 
-InteractionSyte:
+InteractionStyle:
     'RequestResponse' | 'MessageQueue' | 'Pub/Sub'
 ;
 
@@ -112,6 +116,10 @@ PerformanceLevel:
 
 SecurityLevel:
     'restricted' | 'internal' | 'public'
+;
+
+AuthLevel:
+    'token' | 'cookie' | 'password' | 'mfa' | 'keypass'
 ;
 
 RecoverabilityLevel:
