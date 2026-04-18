@@ -1,22 +1,23 @@
 subsystem s4 {
-    component Gateway : communication api_gateway 
-    component BrokerIn : communication event_broker 
-    component Controller : logic microservice
-    component Blackboard : logic domain_service
-    component Audit : logic microservice 
-    component Health : logic microservice
-    component BrokerOut : communication event_broker
-    component Audit_Db : data database
-    component Recovery_Db : data database
+    component Gateway : communication api_gateway { availability = critical recoverability = fast performance = realtime security = internal replicas = 2}
+    component BrokerIn : communication event_broker { availability = critical recoverability = fast performance = realtime security = public }
+    component Controller : logic microservice { availability = high recoverability = fast performance = batch security = restricted }
+    component Blackboard : logic domain_service { availability = standard recoverability = normal performance = batch security = restricted }
+    component Audit : logic microservice  { availability = standard recoverability = normal performance = batch security = restricted }
+    component Health : logic microservice { availability = standard recoverability = fast performance = batch security = restricted }
+    component BrokerOut : communication event_broker { availability = critical recoverability = fast performance = realtime security = public }
+    component Audit_Db : data database { availability = standard recoverability = normal performance = batch security = restricted }
+    component Recovery_Db : data database { availability = standard recoverability = normal performance = batch security = restricted }
 
-    connector data_stream Gateway -> BrokerIn { style = MessageQueue  protocol = AMQP }
-    connector event_notification BrokerIn -> Controller { style = MessageQueue protocol = AMQP }
-    connector event_notification BrokerIn -> Audit { style = MessageQueue protocol = AMQP }
-    connector dependency Controller -> Blackboard { style = RequestResponse protocol = Http }
-    connector control_command Controller -> BrokerOut { style = Pub/Sub protocol = Tcp }
+    connector data_stream Gateway -> BrokerIn { style = MessageQueue  protocol = AMQP encrypted = true }
+    connector event_notification BrokerIn -> Controller { style = MessageQueue protocol = AMQP encrypted = true}
+    connector event_notification BrokerIn -> Audit { style = MessageQueue protocol = AMQP encrypted = true}
+    connector dependency Controller -> Blackboard { style = RequestResponse protocol = Http encrypted = true}
+    connector control_command Controller -> BrokerOut { style = Pub/Sub protocol = Tcp encrypted = true}
     connector dependency Blackboard -> Recovery_Db 
     connector dependency Audit -> Audit_Db
-    connector event_notification BrokerOut -> Audit { style = Pub/Sub protocol = Tcp }
+    connector event_notification BrokerOut -> Audit { style = Pub/Sub protocol = Tcp encrypted = true }
+    connector event_notification BrokerOut -> s5 { style = Pub/Sub protocol = Tcp encrypted = true }
 }
 
 subsystem externalSystems{
@@ -25,14 +26,19 @@ subsystem externalSystems{
     component Medics : external external_agency 
     component Rescue : external external_agency 
 
-    connector data_stream FireFighters -> s4.Gateway { style = RequestResponse protocol = Http }
-    connector data_stream CivilDefense -> s4.Gateway { style = RequestResponse protocol = Http }
+    connector data_stream FireFighters -> s4.Gateway { style = RequestResponse protocol = Http encrypted = true }
+    connector data_stream CivilDefense -> s4.Gateway { style = RequestResponse protocol = Http encrypted = true }
 
-    connector data_stream Medics -> s4.Gateway { style = RequestResponse protocol = Http }
-    connector data_stream Rescue -> s4.Gateway { style = RequestResponse protocol = Http }
+    connector data_stream Medics -> s4.Gateway { style = RequestResponse protocol = Http encrypted = true }
+    connector data_stream Rescue -> s4.Gateway { style = RequestResponse protocol = Http encrypted = true }
     
-    connector event_notification s4.BrokerOut -> FireFighters { style = Pub/Sub protocol = Tcp }
-    connector event_notification s4.BrokerOut -> CivilDefense { style = Pub/Sub protocol = Tcp }
-    connector event_notification s4.BrokerOut -> Medics { style = Pub/Sub protocol = Tcp }
-    connector event_notification s4.BrokerOut -> Rescue { style = Pub/Sub protocol = Tcp }
+    connector event_notification s4.BrokerOut -> FireFighters { style = Pub/Sub protocol = Tcp encrypted = true }
+    connector event_notification s4.BrokerOut -> CivilDefense { style = Pub/Sub protocol = Tcp encrypted = true }
+    connector event_notification s4.BrokerOut -> Medics { style = Pub/Sub protocol = Tcp encrypted = true }
+    connector event_notification s4.BrokerOut -> Rescue { style = Pub/Sub protocol = Tcp encrypted = true }
 }
+
+connector event_notification s2 -> s4.BrokerIn {style = MessageQueue protocol = Tcp encrypted = true }
+connector event_notification s5 -> s4.BrokerIn { style = MessageQueue protocol = Tcp encrypted = true }
+connector event_notification s3 -> s4.BrokerIn { style = MessageQueue protocol = Tcp encrypted = true }
+
