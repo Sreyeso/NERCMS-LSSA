@@ -12,32 +12,32 @@ subsystem data_acquisition_edge {
     component hydrological_sensor : physical sensor {
         availability = critical
         performance = realtime
-        security = restricted
         auth = password
+        security = restricted
         tech = "LoRaWAN/MQTT"
     }
 
     component seismic_sensor : physical sensor {
         availability = critical
         performance = realtime
-        security = restricted 
         auth = password
+        security = restricted 
         tech = "LoRaWAN/MQTT"
     }
 
     component atmospheric_sensor : physical sensor {
         availability = critical
         performance = realtime
-        security = restricted
         auth = password
+        security = restricted
         tech = "LoRaWAN/MQTT"
     }
 
     component camera : physical sensor {
         availability = high
         performance = realtime 
-        security = restricted
         auth = password
+        security = restricted
         tech = "RTSP"
         port = 6554
     }
@@ -49,10 +49,10 @@ subsystem data_acquisition_edge {
     // Capa Logic
     component data_ingestion_ms : logic microservice {
         availability = critical
-        performance = realtime
         recoverability = fast
-        security = internal
+        performance = realtime
         auth = token
+        security = internal
         mem_limit = "512Mi"
         cpu_limit = 0.5
         port = 6001
@@ -60,21 +60,21 @@ subsystem data_acquisition_edge {
 
     component notification_mb : communication event_broker {
         availability = critical
-        performance = realtime
         recoverability = fast
-        security = internal
+        performance = realtime
         auth = password
-        tech = "RabbitMQ/Kafka"
+        security = internal
         mem_limit = "1.5Gi"
+        tech = "RabbitMQ/Kafka"
         port = 6672
     }
 
     component data_standardization_ms : logic microservice {
         availability = high
-        performance = interactive
         recoverability = fast
-        security = internal
+        performance = interactive
         auth = token
+        security = internal
         mem_limit = "1Gi"
         cpu_limit = 1.0
         port = 6002
@@ -83,40 +83,40 @@ subsystem data_acquisition_edge {
     // Capa Data
     component raw_data : data database {
         availability = high
-        performance = interactive
         recoverability = fast
-        security = internal
+        performance = interactive
         auth = password
+        security = internal
         tech = "PostgreSQL"
         port = 6432
     }
 
     component raw_files : data bucket {
         availability = high
-        performance = interactive
         recoverability = fast
-        security = internal
+        performance = interactive
         auth = password
+        security = internal
         tech = "S3-Compatible"
         port = 6900
     }
 
     component processed_data : data database {
         availability = high
-        performance = interactive
         recoverability = fast
-        security = internal
+        performance = interactive
         auth = password
+        security = internal
         tech = "PostgreSQL"
         port = 6433
     }
 
     component processed_files : data bucket {
         availability = high
-        performance = interactive
         recoverability = fast
-        security = internal
+        performance = interactive
         auth = password
+        security = internal
         tech = "S3-Compatible"
         port = 6901
     }    
@@ -124,10 +124,10 @@ subsystem data_acquisition_edge {
     // Capa Communication
     component publisher : communication microservice {
         availability = high
-        performance = interactive
         recoverability = fast
-        security = internal
+        performance = interactive
         auth = token
+        security = internal
         mem_limit = "256Mi"
         port = 6003
     }
@@ -139,50 +139,50 @@ subsystem data_acquisition_edge {
     // Capa Presentation
     component operator_frontend : presentation web_ui {
         availability = standard
-        performance = interactive
         recoverability = normal
-        security = restricted
+        performance = interactive
         auth = mfa
+        security = restricted
         port = 6443
     }
 
     // Capa Logic
     component processing_unit_ms : logic microservice {
         availability = high
-        performance = batch
         recoverability = normal
-        security = internal
+        performance = batch
         auth = token
+        security = internal
         port = 6004
     }
 
     // Capa Communication
     component interface : communication interface {
         availability = high
-        performance = interactive
         recoverability = normal
-        security = restricted
+        performance = interactive
         auth = token
+        security = restricted
         port = 6080
     }
 
     // Capa Data
     component topology_status_db : data database {
         availability = high
-        performance = interactive
         recoverability = normal 
-        security = internal
+        performance = interactive
         auth = password
+        security = internal
         tech = "PostgreSQL"
         port = 6434
     }
 
     component report_db : data database {
         availability = high
-        performance = interactive
         recoverability = normal 
-        security = internal
+        performance = interactive
         auth = password
+        security = internal
         tech = "PostgreSQL"
         port = 6435
     }    
@@ -193,20 +193,20 @@ subsystem data_acquisition_edge {
 
     // Sensado -> Borde
     connector event_notification hydrological_sensor -> data_ingestion_ms { 
-        protocol = MQTT 
         style = Pub/Sub
+        protocol = MQTT 
         encrypted = true
     }
 
     connector event_notification seismic_sensor -> data_ingestion_ms { 
-        protocol = MQTT 
         style = Pub/Sub
+        protocol = MQTT 
         encrypted = true
     }
 
     connector event_notification atmospheric_sensor -> data_ingestion_ms { 
-        protocol = MQTT 
         style = Pub/Sub
+        protocol = MQTT 
         encrypted = true
     }
 
