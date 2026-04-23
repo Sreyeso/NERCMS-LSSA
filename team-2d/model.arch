@@ -8,13 +8,64 @@
 
         component Interfaz_Usuario : presentation dashboard { tech="react-ui" port=3000 }
 
-        connector data_stream Rec_Sensores -> Procesador_Central { style = MessageQueue protocol = AMQP }
-        connector event_notification Rec_Alertas -> Procesador_Central { style = MessageQueue protocol = AMQP }
+        component Emisor_Sensores : communication interface { port=8080 }
+        component Emisor_Alertas : communication interface { port=8081 }
+        component Emisor_Logistica : communication interface { port=8082 }
+        component Emisor_Personal : communication interface { port=8083 }
+
+        component Rec_Sensores : communication interface { port=8090 }
+        component Rec_Alertas : communication interface { port=8091 }
+        component Rec_Logistica : communication interface { port=8092 }
+        component Rec_Personal : communication interface { port=8093 }
+
+        component S1_Message_Queue: communication event_broker {port = 8094}
 
         connector dependency Procesador_Central -> BD_Operacional
         connector dependency BD_Operacional      -> Historial
 
+        connector control_command Procesador_Central -> Motor_Decisiones
+
         connector data_stream BD_Operacional -> Motor_Decisiones { style = RequestResponse protocol = gRPC }
         connector data_stream Motor_Decisiones -> Interfaz_Usuario { style = RequestResponse protocol = Http }
         connector control_command Motor_Decisiones -> Gen_Comandos { style = RequestResponse protocol = gRPC }
+        
+
+        connector control_command Gen_Comandos -> Emisor_Sensores { style = RequestResponse protocol = gRPC }
+        connector control_command Gen_Comandos -> Emisor_Alertas { style = RequestResponse protocol = gRPC }
+        connector control_command Gen_Comandos -> Emisor_Logistica { style = RequestResponse protocol = gRPC}
+        connector control_command Gen_Comandos -> Emisor_Personal { style = RequestResponse protocol = gRPC}
+
+        connector event_notification S1_Message_Queue -> Procesador_Central {style = MessageQueue protocol = AMQP }
+        connector data_stream Rec_Sensores -> Procesador_Central { style = RequestResponse protocol = gRPC }
+        connector event_notification Rec_Alertas -> Procesador_Central { style = MessageQueue protocol = AMQP }
+        connector data_stream Rec_Logistica -> Procesador_Central { style = RequestResponse protocol = gRPC }
+        connector data_stream Rec_Personal -> Procesador_Central { style = RequestResponse protocol = gRPC }
+
     }
+
+
+//To system 1
+connector data_stream central_command_core.Emisor_Sensores -> data_acquisition_edge.interface_gateway {???}
+
+//From system 1
+connector event_notification data_acquisition_edge.publisher -> central_command_core.S1_Message_Queue {???}
+connector data_acquisition_edge.interface_gateway -> central_command_core.Rec_Sensores {???}
+
+//To system 2
+connector control_command central_command_core.Emisor_Alertas -> s2 {???}
+
+//From system 2
+connector s2 -> central_command_core.Rec_Alertas {???}
+
+//To system 3
+connector control_command central_command_core.Emisor_Logistica -> s3 {???}
+
+//From system 3
+connector s3 -> central_command_core.Rec_Logistica {???}
+
+//To system 4
+connector event_notification central_command_core.Emisor_Personal -> s4 {style = MessageQueue protocol = Tcp encrypted = true}
+
+//From system 4
+connector data_stream  s4 -> central_command_core.Rec_Personal {style = Pub/Sub protocol = Tcp encrypted = true}
+
