@@ -1,1 +1,20 @@
-subsystem s5 { }
+    subsystem central_command_core {
+        component Procesador_Central : logic microservice { tech="python-logic" port=8200 }
+        component Motor_Decisiones   : logic domain_service { tech="expert-system" }
+        component Gen_Comandos       : logic microservice { port=8103 }
+
+        component BD_Operacional : data database { tech="postgresql" port=5432 }
+        component Historial      : data database { tech="mongodb" port=27017 }
+
+        component Interfaz_Usuario : presentation dashboard { tech="react-ui" port=3000 }
+
+        connector data_stream Rec_Sensores -> Procesador_Central { style = MessageQueue protocol = AMQP }
+        connector event_notification Rec_Alertas -> Procesador_Central { style = MessageQueue protocol = AMQP }
+
+        connector dependency Procesador_Central -> BD_Operacional
+        connector dependency BD_Operacional      -> Historial
+
+        connector data_stream BD_Operacional -> Motor_Decisiones { style = RequestResponse protocol = gRPC }
+        connector data_stream Motor_Decisiones -> Interfaz_Usuario { style = RequestResponse protocol = Http }
+        connector control_command Motor_Decisiones -> Gen_Comandos { style = RequestResponse protocol = gRPC }
+    }
