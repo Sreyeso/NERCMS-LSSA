@@ -19,6 +19,7 @@
         component Rec_Personal : communication interface { port=8093 }
 
         component S1_Message_Queue: communication event_broker {port = 8094}
+        component S3_Message_Queue: communication event_broker {port = 8096}
 
         connector dependency Procesador_Central -> BD_Operacional
         connector dependency BD_Operacional      -> Historial
@@ -36,6 +37,7 @@
         connector control_command Gen_Comandos -> Emisor_Personal { style = RequestResponse protocol = gRPC}
 
         connector event_notification S1_Message_Queue -> Procesador_Central {style = MessageQueue protocol = AMQP }
+        connector event_notification S3_Message_Queue -> Procesador_Central {style = MessageQueue protocol = AMQP }
         connector data_stream Rec_Sensores -> Procesador_Central { style = RequestResponse protocol = gRPC }
         connector event_notification Rec_Alertas -> Procesador_Central { style = MessageQueue protocol = AMQP }
         connector data_stream Rec_Logistica -> Procesador_Central { style = RequestResponse protocol = gRPC }
@@ -45,11 +47,11 @@
 
 
 //To system 1
-connector data_stream central_command_core.Emisor_Sensores -> data_acquisition_edge.interface_gateway {???}
+connector data_stream central_command_core.Emisor_Sensores -> data_acquisition_edge.interface_gateway {style = RequestResponse protocol = REST encrypted = true}
 
 //From system 1
-connector event_notification data_acquisition_edge.publisher -> central_command_core.S1_Message_Queue {???}
-connector data_acquisition_edge.interface_gateway -> central_command_core.Rec_Sensores {???}
+connector event_notification data_acquisition_edge.publisher -> central_command_core.S1_Message_Queue {style = Pub/Sub protocol = AMQP timeout_ms = 500 encrypted = true}
+connector data_acquisition_edge.interface_gateway -> central_command_core.Rec_Sensores {style = RequestResponse protocol = REST encrypted = true}
 
 //To system 2
 connector control_command central_command_core.Emisor_Alertas -> s2 {???}
@@ -58,10 +60,11 @@ connector control_command central_command_core.Emisor_Alertas -> s2 {???}
 connector s2 -> central_command_core.Rec_Alertas {???}
 
 //To system 3
-connector control_command central_command_core.Emisor_Logistica -> s3 {???}
+connector data_stream central_command_core.Emisor_Logistica -> s3 {style = MessageQueue protocol = AMQP}
 
 //From system 3
-connector s3 -> central_command_core.Rec_Logistica {???}
+connector data_stream s3 -> central_command_core.Rec_Logistica {style = MessageQueue protocol = AMQP}
+connector event_notification s3 -> central_command_core.S3_Message_Queue {style = Pub/Sub protocol = MQTT}
 
 //To system 4
 connector event_notification central_command_core.Emisor_Personal -> s4 {style = MessageQueue protocol = Tcp encrypted = true}
