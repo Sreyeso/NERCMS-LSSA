@@ -46,13 +46,6 @@
     }
 
 
-//To system 1
-connector data_stream central_command_core.Emisor_Sensores -> data_acquisition_edge.interface_gateway {style = RequestResponse protocol = REST encrypted = true}
-
-//From system 1
-connector event_notification data_acquisition_edge.publisher -> central_command_core.S1_Message_Queue {style = Pub/Sub protocol = AMQP timeout_ms = 500 encrypted = true}
-connector data_acquisition_edge.interface_gateway -> central_command_core.Rec_Sensores {style = RequestResponse protocol = REST encrypted = true}
-
 //To system 2
 connector control_command central_command_core.Emisor_Alertas -> s2 {???}
 
