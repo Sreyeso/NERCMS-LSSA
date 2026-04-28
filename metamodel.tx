@@ -61,7 +61,6 @@ ComponentType:
     'database'        | 
     'data_lake'       | 
     'bucket'          | 
-    'edge_node'       | 
     'sensor'          | 
     'actuator'        |
     'external_agency'   
@@ -99,7 +98,7 @@ ConnectorProperties:
 ; 
 
 ProtocolType:
-    'Tcp' | 'WebSockets' | 'Http' | 'gRPC' |'MQTT' | 'AMQP' | 'REST' | 'RTCP'
+    'Tcp' | 'WebSockets' | 'Http' | 'gRPC' |'MQTT' | 'AMQP' | 'REST' | 'RTSP'
 ;
 
 InteractionStyle:
