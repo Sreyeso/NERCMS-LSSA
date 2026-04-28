@@ -1,0 +1,121 @@
+system_of_systems NERCMS_SoS_Global :
+
+  subsystem data_acquisition_edge {}
+  subsystem externalSystems {}
+  subsystem s2 {}
+  subsystem s3 {}
+  subsystem s4 {}
+  subsystem s5 {}
+
+  connector event_notification data_acquisition_edge -> s2 {
+      style=MessageQueue
+      protocol=AMQP
+      timeout_ms=0
+      encrypted=false
+      rate_limit=0
+    }
+  connector event_notification data_acquisition_edge -> s5 {
+      style=MessageQueue
+      protocol=AMQP
+      timeout_ms=0
+      encrypted=false
+      rate_limit=0
+    }
+  connector data_stream data_acquisition_edge -> s2 {
+      style=RequestResponse
+      protocol=Http
+      timeout_ms=0
+      encrypted=false
+      rate_limit=0
+    }
+  connector data_stream data_acquisition_edge -> s5 {
+      style=RequestResponse
+      protocol=Http
+      timeout_ms=0
+      encrypted=false
+      rate_limit=0
+    }
+  connector event_notification s4 -> s5 {
+      style=Pub/Sub
+      protocol=Tcp
+      timeout_ms=0
+      encrypted=true
+      rate_limit=0
+    }
+  connector data_stream externalSystems -> s4 {
+      style=RequestResponse
+      protocol=Http
+      timeout_ms=0
+      encrypted=true
+      rate_limit=0
+    }
+  connector data_stream externalSystems -> s4 {
+      style=RequestResponse
+      protocol=Http
+      timeout_ms=0
+      encrypted=true
+      rate_limit=0
+    }
+  connector data_stream externalSystems -> s4 {
+      style=RequestResponse
+      protocol=Http
+      timeout_ms=0
+      encrypted=true
+      rate_limit=0
+    }
+  connector data_stream externalSystems -> s4 {
+      style=RequestResponse
+      protocol=Http
+      timeout_ms=0
+      encrypted=true
+      rate_limit=0
+    }
+  connector event_notification s4 -> externalSystems {
+      style=Pub/Sub
+      protocol=Tcp
+      timeout_ms=0
+      encrypted=true
+      rate_limit=0
+    }
+  connector event_notification s4 -> externalSystems {
+      style=Pub/Sub
+      protocol=Tcp
+      timeout_ms=0
+      encrypted=true
+      rate_limit=0
+    }
+  connector event_notification s4 -> externalSystems {
+      style=Pub/Sub
+      protocol=Tcp
+      timeout_ms=0
+      encrypted=true
+      rate_limit=0
+    }
+  connector event_notification s4 -> externalSystems {
+      style=Pub/Sub
+      protocol=Tcp
+      timeout_ms=0
+      encrypted=true
+      rate_limit=0
+    }
+  connector event_notification s2 -> s4 {
+      style=MessageQueue
+      protocol=Tcp
+      timeout_ms=0
+      encrypted=true
+      rate_limit=0
+    }
+  connector event_notification s5 -> s4 {
+      style=MessageQueue
+      protocol=Tcp
+      timeout_ms=0
+      encrypted=true
+      rate_limit=0
+    }
+  connector event_notification s3 -> s4 {
+      style=MessageQueue
+      protocol=Tcp
+      timeout_ms=0
+      encrypted=true
+      rate_limit=0
+    }
