@@ -17,7 +17,7 @@ subsystem s4 {
     connector dependency Blackboard -> Recovery_Db 
     connector dependency Audit -> Audit_Db
     connector event_notification BrokerOut -> Audit { style = Pub/Sub protocol = Tcp encrypted = true }
-    connector event_notification BrokerOut -> s5 { style = Pub/Sub protocol = Tcp encrypted = true }
+    connector event_notification BrokerOut -> central_command_core { style = Pub/Sub protocol = Tcp encrypted = true }
 }
 
 subsystem externalSystems{
@@ -39,6 +39,6 @@ subsystem externalSystems{
 }
 
 connector event_notification s2 -> s4.BrokerIn {style = MessageQueue protocol = Tcp encrypted = true }
-connector event_notification s5 -> s4.BrokerIn { style = MessageQueue protocol = Tcp encrypted = true }
+connector event_notification central_command_core -> s4.BrokerIn { style = MessageQueue protocol = Tcp encrypted = true }
 connector event_notification s3 -> s4.BrokerIn { style = MessageQueue protocol = Tcp encrypted = true }
 

@@ -57,6 +57,6 @@ subsystem data_acquisition_edge {
 }
 
 connector event_notification data_acquisition_edge.publisher          -> s2 { style=MessageQueue protocol=AMQP }
-connector event_notification data_acquisition_edge.publisher          -> s5 { style=MessageQueue protocol=AMQP }
+connector event_notification data_acquisition_edge.publisher          -> central_command_core { style=MessageQueue protocol=AMQP }
 connector data_stream        data_acquisition_edge.interface_gateway  -> s2 { style=RequestResponse protocol=Http }
-connector data_stream        data_acquisition_edge.interface_gateway  -> s5 { style=RequestResponse protocol=Http }
+connector data_stream        data_acquisition_edge.interface_gateway  -> central_command_core { style=RequestResponse protocol=Http }
