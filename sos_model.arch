@@ -1,38 +1,45 @@
 system_of_systems NERCMS_SoS_Global :
 
-  subsystem data_acquisition_edge {}
   subsystem externalSystems {}
+  subsystem s1_data_acquisition_edge {}
   subsystem s2 {}
   subsystem s3 {}
   subsystem s4 {}
   subsystem s5 {}
 
-  connector event_notification data_acquisition_edge -> s2 {
-      style=MessageQueue
+  connector event_notification s1_data_acquisition_edge -> s2 {
+      style=Pub/Sub
       protocol=AMQP
-      timeout_ms=0
-      encrypted=false
+      timeout_ms=500
+      encrypted=true
       rate_limit=0
     }
-  connector event_notification data_acquisition_edge -> s5 {
-      style=MessageQueue
+  connector event_notification s1_data_acquisition_edge -> s5 {
+      style=Pub/Sub
       protocol=AMQP
-      timeout_ms=0
-      encrypted=false
+      timeout_ms=500
+      encrypted=true
       rate_limit=0
     }
-  connector data_stream data_acquisition_edge -> s2 {
+  connector data_stream s1_data_acquisition_edge -> s5 {
       style=RequestResponse
-      protocol=Http
+      protocol=REST
       timeout_ms=0
-      encrypted=false
+      encrypted=true
       rate_limit=0
     }
-  connector data_stream data_acquisition_edge -> s5 {
+  connector data_stream s5 -> s1_data_acquisition_edge {
       style=RequestResponse
-      protocol=Http
+      protocol=REST
       timeout_ms=0
-      encrypted=false
+      encrypted=true
+      rate_limit=0
+    }
+  connector data_stream s2 -> s1_data_acquisition_edge {
+      style=RequestResponse
+      protocol=REST
+      timeout_ms=0
+      encrypted=true
       rate_limit=0
     }
   connector event_notification s4 -> s5 {

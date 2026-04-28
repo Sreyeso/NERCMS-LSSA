@@ -4,69 +4,88 @@
 
 ```mermaid
 graph TD
-    data_acquisition_edge[[data_acquisition_edge]]
+    s1_data_acquisition_edge[[s1_data_acquisition_edge]]
     s2[[s2]]
     s3[[s3]]
     s4[[s4]]
     externalSystems[[externalSystems]]
     s5[[s5]]
 
-    data_acquisition_edge -- "event_notification (AMQP)" --> s2
-    data_acquisition_edge -- "event_notification (AMQP)" --> s5
-    data_acquisition_edge -- "data_stream (Http)" --> s2
-    data_acquisition_edge -- "data_stream (Http)" --> s5
+    s1_data_acquisition_edge -- "event_notification (AMQP)" --> s2
+    s1_data_acquisition_edge -- "event_notification (AMQP)" --> s5
+    s1_data_acquisition_edge -- "data_stream (REST)" --> s5
+    s5 -- "data_stream (REST)" --> s1_data_acquisition_edge
+    s2 -- "data_stream (REST)" --> s1_data_acquisition_edge
     s2 -- "event_notification (Tcp)" --> s4
     s5 -- "event_notification (Tcp)" --> s4
     s3 -- "event_notification (Tcp)" --> s4
 ```
 
-## Subsystem: data_acquisition_edge
+## Subsystem: s1_data_acquisition_edge
 
 ```mermaid
 graph TD
-    edge_node_regional["edge_node_regional<br/>(edge_node)"]
-    hydro_sensor["hydro_sensor<br/>(sensor)"]
+    hydrological_sensor["hydrological_sensor<br/>(sensor)"]
     seismic_sensor["seismic_sensor<br/>(sensor)"]
-    atmo_sensor["atmo_sensor<br/>(sensor)"]
+    atmospheric_sensor["atmospheric_sensor<br/>(sensor)"]
     camera["camera<br/>(sensor)"]
     data_ingestion_ms["data_ingestion_ms<br/>(microservice)"]
-    data_standarization_ms["data_standarization_ms<br/>(microservice)"]
-    publisher["publisher<br/>(microservice)"]
-    db_raw_data_storage["db_raw_data_storage<br/>(database)"]
-    bucket_raw_files_storage["bucket_raw_files_storage<br/>(data_lake)"]
+    notification_mb["notification_mb<br/>(event_broker)"]
+    data_standardization_ms["data_standardization_ms<br/>(microservice)"]
+    reporting_ms["reporting_ms<br/>(microservice)"]
+    logging_mb["logging_mb<br/>(event_broker)"]
+    logging_ms["logging_ms<br/>(microservice)"]
+    raw_data_db["raw_data_db<br/>(database)"]
+    raw_files["raw_files<br/>(bucket)"]
     processed_data_db["processed_data_db<br/>(database)"]
-    bucket_processing_file_storage["bucket_processing_file_storage<br/>(data_lake)"]
-    file_storage_metadata["file_storage_metadata<br/>(database)"]
-    processing_unit_ms["processing_unit_ms<br/>(microservice)"]
-    topology_status_db["topology_status_db<br/>(database)"]
-    report_db["report_db<br/>(database)"]
+    processed_files["processed_files<br/>(bucket)"]
+    logging_db["logging_db<br/>(database)"]
+    publisher["publisher<br/>(microservice)"]
+    edge_ag["edge_ag<br/>(api_gateway)"]
     operator_frontend["operator_frontend<br/>(web_ui)"]
-    interface_gateway["interface_gateway<br/>(api_gateway)"]
-    client_web_browser["client_web_browser<br/>(web_ui)"]
+    node_ag["node_ag<br/>(api_gateway)"]
+    interface["interface<br/>(interface)"]
+    topology_ms["topology_ms<br/>(microservice)"]
+    reporting_center_ms["reporting_center_ms<br/>(microservice)"]
+    auth_ms["auth_ms<br/>(microservice)"]
+    topology_status_db["topology_status_db<br/>(database)"]
+    reporting_db["reporting_db<br/>(database)"]
+    auth_db["auth_db<br/>(database)"]
 
-    hydro_sensor -- "data_stream (MQTT)" --> data_ingestion_ms
-    seismic_sensor -- "data_stream (MQTT)" --> data_ingestion_ms
-    atmo_sensor -- "data_stream (MQTT)" --> data_ingestion_ms
-    camera -- "data_stream (WebSockets)" --> data_ingestion_ms
-    data_ingestion_ms -- "event_notification (AMQP)" --> data_standarization_ms
-    data_standarization_ms -- "event_notification (AMQP)" --> publisher
-    data_ingestion_ms -- "dependency" --> db_raw_data_storage
-    data_ingestion_ms -- "dependency" --> bucket_raw_files_storage
-    data_ingestion_ms -- "dependency" --> file_storage_metadata
-    data_standarization_ms -- "dependency" --> processed_data_db
-    data_standarization_ms -- "dependency" --> bucket_processing_file_storage
-    data_standarization_ms -- "dependency" --> file_storage_metadata
-    data_standarization_ms -- "dependency" --> db_raw_data_storage
-    data_standarization_ms -- "dependency" --> bucket_raw_files_storage
-    publisher -- "dependency" --> processed_data_db
-    publisher -- "dependency" --> bucket_processing_file_storage
-    data_standarization_ms -- "data_stream (Http)" --> interface_gateway
-    interface_gateway -- "data_stream (Http)" --> processing_unit_ms
-    processing_unit_ms -- "data_stream (Http)" --> interface_gateway
-    operator_frontend -- "data_stream (Http)" --> processing_unit_ms
-    client_web_browser -- "data_stream (Http)" --> operator_frontend
-    processing_unit_ms -- "dependency" --> topology_status_db
-    processing_unit_ms -- "dependency" --> report_db
+    hydrological_sensor -- "event_notification (MQTT)" --> data_ingestion_ms
+    seismic_sensor -- "event_notification (MQTT)" --> data_ingestion_ms
+    atmospheric_sensor -- "event_notification (MQTT)" --> data_ingestion_ms
+    camera -- "data_stream (RTSP)" --> data_ingestion_ms
+    data_ingestion_ms -- "event_notification (AMQP)" --> notification_mb
+    notification_mb -- "event_notification (AMQP)" --> data_standardization_ms
+    edge_ag -- "data_stream (REST)" --> reporting_ms
+    edge_ag -- "data_stream (REST)" --> logging_ms
+    data_ingestion_ms -- "dependency (Tcp)" --> raw_data_db
+    data_ingestion_ms -- "dependency (Http)" --> raw_files
+    data_standardization_ms -- "dependency (Tcp)" --> raw_data_db
+    data_standardization_ms -- "dependency (Http)" --> raw_files
+    data_standardization_ms -- "dependency (Tcp)" --> processed_data_db
+    data_standardization_ms -- "dependency (Http)" --> processed_files
+    publisher -- "dependency (Tcp)" --> processed_data_db
+    publisher -- "dependency (Http)" --> processed_files
+    reporting_ms -- "dependency (Tcp)" --> processed_data_db
+    reporting_ms -- "dependency (Http)" --> processed_files
+    logging_mb -- "event_notification (AMQP)" --> logging_ms
+    logging_ms -- "dependency (Tcp)" --> logging_db
+    edge_ag -- "event_notification (AMQP)" --> logging_mb
+    data_ingestion_ms -- "event_notification (AMQP)" --> logging_mb
+    data_standardization_ms -- "event_notification (AMQP)" --> logging_mb
+    reporting_ms -- "event_notification (AMQP)" --> logging_mb
+    publisher -- "event_notification (AMQP)" --> logging_mb
+    interface -- "data_stream (REST)" --> edge_ag
+    operator_frontend -- "data_stream (REST)" --> node_ag
+    interface -- "data_stream (REST)" --> node_ag
+    node_ag -- "data_stream (REST)" --> topology_ms
+    node_ag -- "data_stream (REST)" --> reporting_center_ms
+    node_ag -- "data_stream (REST)" --> auth_ms
+    topology_ms -- "dependency (Tcp)" --> topology_status_db
+    reporting_center_ms -- "dependency (Tcp)" --> reporting_db
+    auth_ms -- "dependency (Tcp)" --> auth_db
 ```
 
 ## Subsystem: s2

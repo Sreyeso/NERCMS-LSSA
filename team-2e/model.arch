@@ -1,4 +1,4 @@
-subsystem data_acquisition_edge {
+subsystem s1_data_acquisition_edge {
 
     // ----------------------------------------------------------
     // Componentes del sistema
@@ -13,7 +13,6 @@ subsystem data_acquisition_edge {
         performance = realtime
         auth = password
         security = restricted
-        tech = "LoRaWAN/MQTT"
     }
 
     component seismic_sensor : physical sensor {
@@ -21,7 +20,6 @@ subsystem data_acquisition_edge {
         performance = realtime
         auth = password
         security = restricted 
-        tech = "LoRaWAN/MQTT"
     }
 
     component atmospheric_sensor : physical sensor {
@@ -29,7 +27,6 @@ subsystem data_acquisition_edge {
         performance = realtime
         auth = password
         security = restricted
-        tech = "LoRaWAN/MQTT"
     }
 
     component camera : physical sensor {
@@ -37,7 +34,6 @@ subsystem data_acquisition_edge {
         performance = realtime 
         auth = password
         security = restricted
-        tech = "RTSP"
         port = 6554
     }
 
@@ -342,7 +338,7 @@ subsystem data_acquisition_edge {
     }
 
     connector data_stream camera -> data_ingestion_ms { 
-        protocol = RTCP 
+        protocol = RTSP 
         encrypted = true
     }
 
@@ -491,15 +487,15 @@ subsystem data_acquisition_edge {
 }
 
 // Ruta Rápida: Desde el Borde (Publisher) a otros sistemas
-connector event_notification data_acquisition_edge.publisher -> s2 { 
+connector event_notification s1_data_acquisition_edge.publisher -> s2 { 
     style = Pub/Sub 
     protocol = AMQP
     timeout_ms = 500
     encrypted = true
 }
 
-//connector event_notification data_acquisition_edge.publisher -> central_command_core.S1_Message_Queue
-connector event_notification data_acquisition_edge.publisher -> s5 { 
+//connector event_notification s1_data_acquisition_edge.publisher -> central_command_core.S1_Message_Queue
+connector event_notification s1_data_acquisition_edge.publisher -> s5 { 
     style = Pub/Sub 
     protocol = AMQP 
     timeout_ms = 500
@@ -507,21 +503,21 @@ connector event_notification data_acquisition_edge.publisher -> s5 {
 }
 
 // Ruta Lenta / Auditoría: Desde el Central (Interface) a otros sistemas
-//connector data_stream data_acquisition_edge.interface -> central_command_core.Rec_Sensores  
-connector data_stream data_acquisition_edge.interface -> s5 { 
+//connector data_stream s1_data_acquisition_edge.interface -> central_command_core.Rec_Sensores  
+connector data_stream s1_data_acquisition_edge.interface -> s5 { 
     style = RequestResponse 
     protocol = REST 
     encrypted = true
 }
 
-//connector data_stream central_command_core.Emisor_Sensores -> data_acquisition_edge.interface 
-connector data_stream s5 -> data_acquisition_edge.interface { 
+//connector data_stream central_command_core.Emisor_Sensores -> s1_data_acquisition_edge.interface 
+connector data_stream s5 -> s1_data_acquisition_edge.interface { 
     style = RequestResponse 
     protocol = REST 
     encrypted = true
 }
 
-connector data_stream s2 -> data_acquisition_edge.interface { 
+connector data_stream s2 -> s1_data_acquisition_edge.interface { 
     style = RequestResponse 
     protocol = REST 
     encrypted = true
