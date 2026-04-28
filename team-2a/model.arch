@@ -1,4 +1,4 @@
-subsystem s4 {
+subsystem S4_personnel_orchestration {
     component Gateway : communication api_gateway { availability = critical recoverability = fast performance = realtime security = internal min_replicas = 2}
     component BrokerIn : communication event_broker { availability = critical recoverability = fast performance = realtime security = public }
     component Controller : logic microservice { availability = high recoverability = fast performance = batch security = restricted }
@@ -17,7 +17,6 @@ subsystem s4 {
     connector dependency Blackboard -> Recovery_Db 
     connector dependency Audit -> Audit_Db
     connector event_notification BrokerOut -> Audit { style = Pub/Sub protocol = Tcp encrypted = true }
-    connector event_notification BrokerOut -> s5 { style = Pub/Sub protocol = Tcp encrypted = true }
 }
 
 subsystem externalSystems{
@@ -25,20 +24,4 @@ subsystem externalSystems{
     component CivilDefense : external external_agency 
     component Medics : external external_agency 
     component Rescue : external external_agency 
-
-    connector data_stream FireFighters -> s4.Gateway { style = RequestResponse protocol = Http encrypted = true }
-    connector data_stream CivilDefense -> s4.Gateway { style = RequestResponse protocol = Http encrypted = true }
-
-    connector data_stream Medics -> s4.Gateway { style = RequestResponse protocol = Http encrypted = true }
-    connector data_stream Rescue -> s4.Gateway { style = RequestResponse protocol = Http encrypted = true }
-    
-    connector event_notification s4.BrokerOut -> FireFighters { style = Pub/Sub protocol = Tcp encrypted = true }
-    connector event_notification s4.BrokerOut -> CivilDefense { style = Pub/Sub protocol = Tcp encrypted = true }
-    connector event_notification s4.BrokerOut -> Medics { style = Pub/Sub protocol = Tcp encrypted = true }
-    connector event_notification s4.BrokerOut -> Rescue { style = Pub/Sub protocol = Tcp encrypted = true }
 }
-
-connector event_notification s2 -> s4.BrokerIn {style = MessageQueue protocol = Tcp encrypted = true }
-connector event_notification s5 -> s4.BrokerIn { style = MessageQueue protocol = Tcp encrypted = true }
-connector event_notification s3 -> s4.BrokerIn { style = MessageQueue protocol = Tcp encrypted = true }
-

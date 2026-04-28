@@ -1,4 +1,3 @@
-import os
 from textx import metamodel_from_file
 from textx.scoping.providers import FQN
 
@@ -8,6 +7,10 @@ def get_subsystem_name(node):
     elif node.__class__.__name__ == 'Component':
         return node.parent.name
     return None
+
+def safe_id(name):
+    """Evita problemas con Mermaid (guiones, etc.)"""
+    return name.replace("-", "_")
 
 def generate_diagrams():
     # Load metamodel and register FQN resolution
@@ -20,20 +23,22 @@ def generate_diagrams():
     lines = []
     lines.append("# Architecture Diagrams\n")
 
+    # ==========================================================
     # 1. Global SoS Diagram
+    # ==========================================================
     lines.append("## System of Systems (Global)\n")
     lines.append("```mermaid")
-    lines.append("graph TD")
+    lines.append("graph LR")
     
     subsystems = [e for e in model.elements if e.__class__.__name__ == 'Subsystem']
     
     for sub in subsystems:
-        # Use double brackets for subsystems
-        lines.append(f"    {sub.name}[[{sub.name}]]")
+        sid = safe_id(sub.name)
+        lines.append(f"    {sid}[[{sub.name}]]")
 
     lines.append("")
     
-    global_connectors = [e for e in model.elements if e.__class__.__name__ == 'Connector']
+    global_connectors = [e for e in model.elements if e.__class__.__name__ == 'CrossConnector']
     for c in global_connectors:
         src_node = getattr(c, 'from')
         dst_node = getattr(c, 'to')
@@ -46,23 +51,72 @@ def generate_diagrams():
             if getattr(c, 'properties', None) and getattr(c.properties, 'protocol', None):
                 label += f" ({c.properties.protocol})"
             
-            lines.append(f"    {src_sub} -- \"{label}\" --> {dst_sub}")
+            lines.append(
+                f"    {safe_id(src_sub)} -- \"{label}\" --> {safe_id(dst_sub)}"
+            )
 
     lines.append("```\n")
 
+    # ==========================================================
     # 2. Per Subsystem Diagrams
+    # ==========================================================
+    node_order = ["sensing", "edge", "central", "external", "undefined"]
+    tier_order = ["presentation", "communication", "logic", "data", "physical"]
+
     for sub in subsystems:
         lines.append(f"## Subsystem: {sub.name}\n")
         lines.append("```mermaid")
-        lines.append("graph TD")
+        lines.append("graph LR")
         
+        sub_id = safe_id(sub.name)
+        lines.append(f"    subgraph {sub_id}")
+
+        # ------------------------------------------
+        # 1. Agrupar por nodo
+        # ------------------------------------------
         components = [e for e in sub.elements if e.__class__.__name__ == 'Component']
-        for comp in components:
-            lines.append(f"    {comp.name}[\"{comp.name}<br/>({comp.type})\"]")
-            
-        lines.append("")
         
+        nodes = {}
+        for comp in components:
+            node = getattr(comp, "node", None) or "undefined"
+            nodes.setdefault(node, []).append(comp)
+
+        # ------------------------------------------
+        # 2. Render: node -> tier -> components
+        # ------------------------------------------
+        for node in node_order:
+            if node not in nodes:
+                continue
+
+            node_id = f"{sub_id}_{node}"
+            lines.append(f"        subgraph {node_id}[{node}]")
+
+            tiers = {}
+            for comp in nodes[node]:
+                tiers.setdefault(comp.tier, []).append(comp)
+
+            for tier in tier_order:
+                if tier not in tiers:
+                    continue
+
+                tier_id = f"{sub_id}_{node}_{tier}"
+                lines.append(f"            subgraph {tier_id}[{tier}]")
+
+                for comp in tiers[tier]:
+                    cid = safe_id(comp.name)
+                    label = f"{comp.name}<br/>[{node}/{comp.tier}]<br/>({comp.type})"
+                    lines.append(f"                {cid}[\"{label}\"]")
+                lines.append("            end")
+
+            lines.append("        end")
+
+        lines.append("")
+
+        # ------------------------------------------
+        # 3. Conectores internos
+        # ------------------------------------------
         connectors = [e for e in sub.elements if e.__class__.__name__ == 'Connector']
+        
         for c in connectors:
             src_node = getattr(c, 'from')
             dst_node = getattr(c, 'to')
@@ -70,15 +124,20 @@ def generate_diagrams():
             label = c.type
             if getattr(c, 'properties', None) and getattr(c.properties, 'protocol', None):
                 label += f" ({c.properties.protocol})"
-                
-            lines.append(f"    {src_node.name} -- \"{label}\" --> {dst_node.name}")
 
+            lines.append(
+                f"    {safe_id(src_node.name)} -- \"{label}\" --> {safe_id(dst_node.name)}"
+            )
+
+        lines.append("    end")
         lines.append("```\n")
         
     # Write to diagram file
     with open('diagrams.md', 'w') as f:
         f.write('\n'.join(lines))
-    print(f"✅ Generated diagrams.md successfully.")
+
+    print("✅ Generated diagrams.md successfully.")
+
 
 if __name__ == '__main__':
     generate_diagrams()

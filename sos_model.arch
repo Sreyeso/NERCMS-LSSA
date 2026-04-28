@@ -1,128 +1,112 @@
 system_of_systems NERCMS_SoS_Global :
 
-  subsystem externalSystems {}
-  subsystem s1_data_acquisition_edge {}
-  subsystem s2 {}
-  subsystem s3 {}
-  subsystem s4 {}
-  subsystem s5 {}
+    subsystem S1_data_acquisition_edge {}
+    subsystem S2_early_warning_notification {}
+    subsystem S3_supply_resource_logistics {}
+    subsystem S4_personnel_orchestration {}
+    subsystem S5_central_command_core {}
+    subsystem externalSystems {}
 
-  connector event_notification s1_data_acquisition_edge -> s2 {
-      style=Pub/Sub
-      protocol=AMQP
-      timeout_ms=500
-      encrypted=true
-      rate_limit=0
+    connector event_notification S1_data_acquisition_edge -> S2_early_warning_notification {
+        style=Pub/Sub
+        protocol=AMQP
+        timeout_ms=500
+        encrypted=true
     }
-  connector event_notification s1_data_acquisition_edge -> s5 {
-      style=Pub/Sub
-      protocol=AMQP
-      timeout_ms=500
-      encrypted=true
-      rate_limit=0
+
+    connector event_notification S1_data_acquisition_edge -> S5_central_command_core {
+        style=Pub/Sub
+        protocol=AMQP
+        timeout_ms=500
+        encrypted=true
     }
-  connector data_stream s1_data_acquisition_edge -> s5 {
-      style=RequestResponse
-      protocol=REST
-      timeout_ms=0
-      encrypted=true
-      rate_limit=0
+
+    connector data_stream S1_data_acquisition_edge -> S5_central_command_core {
+        style=RequestResponse
+        protocol=REST
+        encrypted=true
     }
-  connector data_stream s5 -> s1_data_acquisition_edge {
-      style=RequestResponse
-      protocol=REST
-      timeout_ms=0
-      encrypted=true
-      rate_limit=0
+
+    connector data_stream S5_central_command_core -> S1_data_acquisition_edge {
+        style=RequestResponse
+        protocol=REST
+        encrypted=true
     }
-  connector data_stream s2 -> s1_data_acquisition_edge {
-      style=RequestResponse
-      protocol=REST
-      timeout_ms=0
-      encrypted=true
-      rate_limit=0
+
+    connector data_stream S2_early_warning_notification -> S1_data_acquisition_edge {
+        style=RequestResponse
+        protocol=REST
+        encrypted=true
     }
-  connector event_notification s4 -> s5 {
-      style=Pub/Sub
-      protocol=Tcp
-      timeout_ms=0
-      encrypted=true
-      rate_limit=0
+
+    connector event_notification S2_early_warning_notification -> S4_personnel_orchestration {
+        style=MessageQueue
+        protocol=Tcp
+        encrypted=true
     }
-  connector data_stream externalSystems -> s4 {
-      style=RequestResponse
-      protocol=Http
-      timeout_ms=0
-      encrypted=true
-      rate_limit=0
+
+    connector event_notification S5_central_command_core -> S4_personnel_orchestration {
+        style=MessageQueue
+        protocol=Tcp
+        encrypted=true
     }
-  connector data_stream externalSystems -> s4 {
-      style=RequestResponse
-      protocol=Http
-      timeout_ms=0
-      encrypted=true
-      rate_limit=0
+
+    connector event_notification S4_personnel_orchestration -> S5_central_command_core {
+        style=Pub/Sub
+        protocol=Tcp
+        encrypted=true
     }
-  connector data_stream externalSystems -> s4 {
-      style=RequestResponse
-      protocol=Http
-      timeout_ms=0
-      encrypted=true
-      rate_limit=0
+
+    connector event_notification S3_supply_resource_logistics -> S4_personnel_orchestration {
+        style=MessageQueue
+        protocol=Tcp
+        encrypted=true
     }
-  connector data_stream externalSystems -> s4 {
-      style=RequestResponse
-      protocol=Http
-      timeout_ms=0
-      encrypted=true
-      rate_limit=0
+
+    connector data_stream externalSystems -> S4_personnel_orchestration {
+        style=RequestResponse
+        protocol=Http
+        encrypted=true
     }
-  connector event_notification s4 -> externalSystems {
-      style=Pub/Sub
-      protocol=Tcp
-      timeout_ms=0
-      encrypted=true
-      rate_limit=0
+
+    connector data_stream externalSystems -> S4_personnel_orchestration {
+        style=RequestResponse
+        protocol=Http
+        encrypted=true
     }
-  connector event_notification s4 -> externalSystems {
-      style=Pub/Sub
-      protocol=Tcp
-      timeout_ms=0
-      encrypted=true
-      rate_limit=0
+
+    connector data_stream externalSystems -> S4_personnel_orchestration {
+        style=RequestResponse
+        protocol=Http
+        encrypted=true
     }
-  connector event_notification s4 -> externalSystems {
-      style=Pub/Sub
-      protocol=Tcp
-      timeout_ms=0
-      encrypted=true
-      rate_limit=0
+
+    connector data_stream externalSystems -> S4_personnel_orchestration {
+        style=RequestResponse
+        protocol=Http
+        encrypted=true
     }
-  connector event_notification s4 -> externalSystems {
-      style=Pub/Sub
-      protocol=Tcp
-      timeout_ms=0
-      encrypted=true
-      rate_limit=0
+
+    connector event_notification S4_personnel_orchestration -> externalSystems {
+        style=Pub/Sub
+        protocol=Tcp
+        encrypted=true
     }
-  connector event_notification s2 -> s4 {
-      style=MessageQueue
-      protocol=Tcp
-      timeout_ms=0
-      encrypted=true
-      rate_limit=0
+
+    connector event_notification S4_personnel_orchestration -> externalSystems {
+        style=Pub/Sub
+        protocol=Tcp
+        encrypted=true
     }
-  connector event_notification s5 -> s4 {
-      style=MessageQueue
-      protocol=Tcp
-      timeout_ms=0
-      encrypted=true
-      rate_limit=0
+
+    connector event_notification S4_personnel_orchestration -> externalSystems {
+        style=Pub/Sub
+        protocol=Tcp
+        encrypted=true
     }
-  connector event_notification s3 -> s4 {
-      style=MessageQueue
-      protocol=Tcp
-      timeout_ms=0
-      encrypted=true
-      rate_limit=0
+
+    connector event_notification S4_personnel_orchestration -> externalSystems {
+        style=Pub/Sub
+        protocol=Tcp
+        encrypted=true
     }
