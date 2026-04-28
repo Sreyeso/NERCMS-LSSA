@@ -2,102 +2,102 @@ subsystem central_command_core {
 
     // ── Logic tier ────────────────────────────────────────────────
     component Procesador_Central : logic microservice {
-      tech="python-logic"  port=8200
       availability=critical   recoverability=fast
       performance=realtime    security=restricted
-      replicas=3              cpu_limit=2.0   mem_limit="4Gi"
+      min_replicas=3  mem_limit="4Gi" cpu_limit=2.0  tech="python-logic"  port=8200   
+      
     }
     component Motor_Decisiones : logic domain_service {
-      tech="expert-system"
       availability=critical   recoverability=fast
       performance=realtime    security=restricted
-      replicas=2              cpu_limit=1.5   mem_limit="2Gi"
+      min_replicas=2  mem_limit="2Gi" cpu_limit=1.5 
+      tech="expert-system"  
     }
     component Gen_Comandos : logic microservice {
-      tech="python" port=8103
       availability=critical   recoverability=fast
       performance=realtime    security=restricted
-      replicas=2              cpu_limit=1.0   mem_limit="1Gi"
+      min_replicas=2 mem_limit="1Gi" cpu_limit=1.0  
+      tech="python" port=8103
     }
 
     // ── Data tier ─────────────────────────────────────────────────
     component BD_Operacional : data database {
-      tech="postgresql"  port=5432
       availability=critical   recoverability=fast
       performance=interactive  security=restricted
-      replicas=2              cpu_limit=2.0   mem_limit="8Gi"
+      min_replicas=2    mem_limit="8Gi"    cpu_limit=2.0   
+      tech="postgresql"  port=5432
     }
     component Historial : data database {
-      tech="mongodb"  port=27017
       availability=high       recoverability=normal
       performance=batch       security=restricted
-      replicas=1              cpu_limit=1.0   mem_limit="4Gi"
+      min_replicas=1 mem_limit="4Gi" cpu_limit=1.0   
+      tech="mongodb"  port=27017
     }
 
     // ── Presentation tier ─────────────────────────────────────────
     component Interfaz_Usuario : presentation dashboard {
-      tech="react"  port=3000
       availability=standard       recoverability=normal
       performance=interactive  security=internal
-      replicas=2              cpu_limit=0.5   mem_limit="512Mi"
+      min_replicas=2   mem_limit="512Mi"   cpu_limit=0.5   
+      tech="react"  port=3000
     }
 
     // ── Communication tier – Emitters ─────────────────────────────
     component Emisor_Sensores : communication interface {
-      port=8080
       availability=critical   recoverability=fast
       performance=realtime    security=restricted
+      port=8080
     }
     component Emisor_Alertas : communication interface {
-      port=8081
       availability=critical   recoverability=fast
       performance=realtime    security=restricted
+      port=8081
     }
     component Emisor_Logistica : communication interface {
-      port=8082
       availability=high       recoverability=fast
       performance=interactive  security=restricted
+      port=8082
     }
     component Emisor_Personal : communication interface {
-      port=8083
       availability=high       recoverability=normal
       performance=interactive  security=restricted
+      port=8083
     }
 
     // ── Communication tier – Receivers ────────────────────────────
     component Rec_Sensores : communication interface {
-      port=8090
       availability=critical   recoverability=fast
       performance=realtime    security=restricted
+      port=8090
     }
     component Rec_Alertas : communication interface {
-      port=8091
       availability=critical   recoverability=fast
       performance=realtime    security=restricted
+      port=8091
     }
     component Rec_Logistica : communication interface {
-      port=8092
       availability=high       recoverability=fast
       performance=interactive  security=restricted
+      port=8092
     }
     component Rec_Personal : communication interface {
-      port=8093
       availability=high       recoverability=normal
       performance=interactive  security=restricted
+      port=8093
     }
 
     // ── Communication tier – Message Brokers ──────────────────────
     component S1_Message_Queue : communication event_broker {
-      port=8094
       availability=critical   recoverability=fast
       performance=realtime    security=restricted
-      replicas=2              cpu_limit=1.0   mem_limit="2Gi"
+      min_replicas=2   mem_limit="2Gi"  cpu_limit=1.0
+      port=8094   
     }
     component S3_Message_Queue : communication event_broker {
-      port=8096
       availability=high       recoverability=fast
       performance=interactive  security=restricted
-      replicas=1              cpu_limit=0.5   mem_limit="1Gi"
+      min_replicas=1   mem_limit="1Gi"  cpu_limit=0.5
+      port=8096
     }
 
     // ── Internal connectors ───────────────────────────────────────
