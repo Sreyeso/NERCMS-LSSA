@@ -10,7 +10,7 @@ connector event_notification S1_data_acquisition_edge.publisher -> S2_early_warn
     encrypted = true
 }
 
-connector event_notification S1_data_acquisition_edge.publisher -> S5_central_command_core { 
+connector event_notification S1_data_acquisition_edge.publisher -> S5_central_command_core.S1_Message_Queue { 
     style = Pub/Sub 
     protocol = AMQP 
     timeout_ms = 500
@@ -18,13 +18,13 @@ connector event_notification S1_data_acquisition_edge.publisher -> S5_central_co
 }
 
 // Ruta Lenta / Auditoría: Desde el Central (Interface) a otros sistemas
-connector data_stream S1_data_acquisition_edge.interface -> S5_central_command_core { 
+connector data_stream S1_data_acquisition_edge.interface -> S5_central_command_core.Rec_Sensores { 
     style = RequestResponse 
     protocol = REST 
     encrypted = true
 }
 
-connector data_stream S5_central_command_core -> S1_data_acquisition_edge.interface { 
+connector data_stream S5_central_command_core.Emisor_Sensores -> S1_data_acquisition_edge.interface { 
     style = RequestResponse 
     protocol = REST 
     encrypted = true
@@ -46,13 +46,13 @@ connector event_notification S2_early_warning_notification -> S4_personnel_orche
     encrypted = true 
 }
 
-connector event_notification S5_central_command_core -> S4_personnel_orchestration.BrokerIn {
+connector event_notification S5_central_command_core.Emisor_Personal -> S4_personnel_orchestration.BrokerIn {
     style = MessageQueue 
     protocol = Tcp 
     encrypted = true 
 }
 
-connector event_notification S4_personnel_orchestration.BrokerOut -> S5_central_command_core { 
+connector event_notification S4_personnel_orchestration.BrokerOut -> S5_central_command_core.Rec_Personal { 
     style = Pub/Sub 
     protocol = Tcp 
     encrypted = true 
