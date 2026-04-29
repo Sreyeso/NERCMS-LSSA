@@ -56,23 +56,12 @@ connector data_stream S2_early_warning_notification.Rules_Evaluator -> S5_centra
     encrypted = true
 }
 
-// S2 → S5: Alert summary/feedback (S5 can override)
-connector data_stream S2_early_warning_notification.Alert_Manager -> S5_central_command_core {
-    style = RequestResponse
-    protocol = REST
-    timeout_ms = 2000
+connector event_notification S2_early_warning_notification -> S4_personnel_orchestration.BrokerIn {
+    style = MessageQueue
+    protocol = Tcp
     encrypted = true
 }
 
-// S2 → S5: Reconciliation report (Journal_Drainer: async batch after S5 recovery)
-connector data_stream S2_early_warning_notification.Journal_Drainer -> S5_central_command_core {
-    style = RequestResponse
-    protocol = REST
-    timeout_ms = 5000
-    encrypted = true
-}
-
-// S5 coordinates S4 (in normal mode)
 connector event_notification S5_central_command_core -> S4_personnel_orchestration.BrokerIn {
     style = MessageQueue
     protocol = Tcp
@@ -92,8 +81,8 @@ connector event_notification S3_supply_resource_logistics -> S4_personnel_orches
     encrypted = true
 }
 
-// NOTE: S3 and S4 independently subscribe to S2's alerts when S5 is down.
-// This is S3/S4 responsibility, not S2's. S2 just publishes to the broker.
+// NOTE: S2 publishes alerts to S4's broker. Other systems (S3, S5) can also subscribe independently.
+// When S5 is down, S3 and S4 read alerts directly from S2's output and make autonomous decisions.
 
 connector data_stream externalSystems -> S4_personnel_orchestration.Gateway { 
     style = RequestResponse 
