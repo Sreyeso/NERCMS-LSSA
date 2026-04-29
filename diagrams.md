@@ -31,50 +31,50 @@ graph LR
     subgraph S1_data_acquisition_edge
         subgraph S1_data_acquisition_edge_sensing[sensing]
             subgraph S1_data_acquisition_edge_sensing_physical[physical]
-                hydrological_sensor["hydrological_sensor<br/>[sensing/physical]<br/>(sensor)"]
-                seismic_sensor["seismic_sensor<br/>[sensing/physical]<br/>(sensor)"]
-                atmospheric_sensor["atmospheric_sensor<br/>[sensing/physical]<br/>(sensor)"]
-                camera["camera<br/>[sensing/physical]<br/>(sensor)"]
+                hydrological_sensor["hydrological_sensor<br/>(sensor)"]
+                seismic_sensor["seismic_sensor<br/>(sensor)"]
+                atmospheric_sensor["atmospheric_sensor<br/>(sensor)"]
+                camera["camera<br/>(sensor)"]
             end
         end
         subgraph S1_data_acquisition_edge_edge[edge]
             subgraph S1_data_acquisition_edge_edge_communication[communication]
-                publisher["publisher<br/>[edge/communication]<br/>(microservice)"]
-                edge_ag["edge_ag<br/>[edge/communication]<br/>(api_gateway)"]
+                publisher["publisher<br/>(microservice)"]
+                edge_ag["edge_ag<br/>(api_gateway)"]
             end
             subgraph S1_data_acquisition_edge_edge_logic[logic]
-                data_ingestion_ms["data_ingestion_ms<br/>[edge/logic]<br/>(microservice)"]
-                notification_mb["notification_mb<br/>[edge/logic]<br/>(event_broker)"]
-                data_standardization_ms["data_standardization_ms<br/>[edge/logic]<br/>(microservice)"]
-                reporting_ms["reporting_ms<br/>[edge/logic]<br/>(microservice)"]
-                logging_mb["logging_mb<br/>[edge/logic]<br/>(event_broker)"]
-                logging_ms["logging_ms<br/>[edge/logic]<br/>(microservice)"]
+                data_ingestion_ms["data_ingestion_ms<br/>(microservice)"]
+                notification_mb["notification_mb<br/>(event_broker)"]
+                data_standardization_ms["data_standardization_ms<br/>(microservice)"]
+                reporting_ms["reporting_ms<br/>(microservice)"]
+                logging_mb["logging_mb<br/>(event_broker)"]
+                logging_ms["logging_ms<br/>(microservice)"]
             end
             subgraph S1_data_acquisition_edge_edge_data[data]
-                raw_data_db["raw_data_db<br/>[edge/data]<br/>(database)"]
-                raw_files["raw_files<br/>[edge/data]<br/>(bucket)"]
-                processed_data_db["processed_data_db<br/>[edge/data]<br/>(database)"]
-                processed_files["processed_files<br/>[edge/data]<br/>(bucket)"]
-                logging_db["logging_db<br/>[edge/data]<br/>(database)"]
+                raw_data_db["raw_data_db<br/>(database)"]
+                raw_files["raw_files<br/>(bucket)"]
+                processed_data_db["processed_data_db<br/>(database)"]
+                processed_files["processed_files<br/>(bucket)"]
+                logging_db["logging_db<br/>(database)"]
             end
         end
         subgraph S1_data_acquisition_edge_central[central]
             subgraph S1_data_acquisition_edge_central_presentation[presentation]
-                operator_frontend["operator_frontend<br/>[central/presentation]<br/>(web_ui)"]
+                operator_frontend["operator_frontend<br/>(web_ui)"]
             end
             subgraph S1_data_acquisition_edge_central_communication[communication]
-                node_ag["node_ag<br/>[central/communication]<br/>(api_gateway)"]
-                interface["interface<br/>[central/communication]<br/>(interface)"]
+                node_ag["node_ag<br/>(api_gateway)"]
+                interface["interface<br/>(interface)"]
             end
             subgraph S1_data_acquisition_edge_central_logic[logic]
-                topology_ms["topology_ms<br/>[central/logic]<br/>(microservice)"]
-                reporting_center_ms["reporting_center_ms<br/>[central/logic]<br/>(microservice)"]
-                auth_ms["auth_ms<br/>[central/logic]<br/>(microservice)"]
+                topology_ms["topology_ms<br/>(microservice)"]
+                reporting_center_ms["reporting_center_ms<br/>(microservice)"]
+                auth_ms["auth_ms<br/>(microservice)"]
             end
             subgraph S1_data_acquisition_edge_central_data[data]
-                topology_status_db["topology_status_db<br/>[central/data]<br/>(database)"]
-                reporting_db["reporting_db<br/>[central/data]<br/>(database)"]
-                auth_db["auth_db<br/>[central/data]<br/>(database)"]
+                topology_status_db["topology_status_db<br/>(database)"]
+                reporting_db["reporting_db<br/>(database)"]
+                auth_db["auth_db<br/>(database)"]
             end
         end
 
@@ -139,19 +139,18 @@ graph LR
 graph LR
     subgraph S4_personnel_orchestration
         subgraph S4_personnel_orchestration_undefined_communication[communication]
-            Gateway["Gateway<br/>[undefined/communication]<br/>(api_gateway)"]
-            BrokerIn["BrokerIn<br/>[undefined/communication]<br/>(event_broker)"]
-            BrokerOut["BrokerOut<br/>[undefined/communication]<br/>(event_broker)"]
+            Gateway["Gateway<br/>(api_gateway)"]
+            BrokerIn["BrokerIn<br/>(event_broker)"]
+            BrokerOut["BrokerOut<br/>(event_broker)"]
         end
         subgraph S4_personnel_orchestration_undefined_logic[logic]
-            Controller["Controller<br/>[undefined/logic]<br/>(microservice)"]
-            Blackboard["Blackboard<br/>[undefined/logic]<br/>(domain_service)"]
-            Audit["Audit<br/>[undefined/logic]<br/>(microservice)"]
-            Health["Health<br/>[undefined/logic]<br/>(microservice)"]
+            Controller["Controller<br/>(microservice)"]
+            Blackboard["Blackboard<br/>(domain_service)"]
+            Audit["Audit<br/>(microservice)"]
         end
         subgraph S4_personnel_orchestration_undefined_data[data]
-            Audit_Db["Audit_Db<br/>[undefined/data]<br/>(database)"]
-            Recovery_Db["Recovery_Db<br/>[undefined/data]<br/>(database)"]
+            Audit_Db["Audit_Db<br/>(database)"]
+            Recovery_Db["Recovery_Db<br/>(database)"]
         end
 
     Gateway -- "data_stream (AMQP)" --> BrokerIn
@@ -170,6 +169,12 @@ graph LR
 ```mermaid
 graph LR
     subgraph externalSystems
+        subgraph externalSystems_undefined_external[external]
+            FireFighters["FireFighters<br/>(external_agency)"]
+            CivilDefense["CivilDefense<br/>(external_agency)"]
+            Medics["Medics<br/>(external_agency)"]
+            Rescue["Rescue<br/>(external_agency)"]
+        end
 
     end
 ```

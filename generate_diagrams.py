@@ -61,7 +61,7 @@ def generate_diagrams():
     # 2. Per Subsystem Diagrams
     # ==========================================================
     node_order = ["sensing", "edge", "central", "external", "undefined"]
-    tier_order = ["presentation", "communication", "logic", "data", "physical"]
+    tier_order = ["presentation", "communication", "logic", "data", "physical", "edge", "external"]
 
     for sub in subsystems:
         lines.append(f"## Subsystem: {sub.name}\n")
@@ -109,7 +109,7 @@ def generate_diagrams():
 
                 for comp in tiers[tier]:
                     cid = safe_id(comp.name)
-                    label = f"{comp.name}<br/>[{node}/{comp.tier}]<br/>({comp.type})"
+                    label = f"{comp.name}<br/>({comp.type})"
                     lines.append(f"{tier_indent}    {cid}[\"{label}\"]")
                 lines.append(f"{tier_indent}end")
 
