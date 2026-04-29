@@ -3,8 +3,8 @@
 // ----------------------------------------------------------
 
 // Ruta Rápida: Desde el Borde (Publisher) a otros sistemas
-connector event_notification S1_data_acquisition_edge.publisher -> S2_early_warning_notification { 
-    style = Pub/Sub 
+connector event_notification S1_data_acquisition_edge.publisher -> S2_early_warning_notification.Broker_In {
+    style = Pub/Sub
     protocol = AMQP
     timeout_ms = 500
     encrypted = true
@@ -82,13 +82,13 @@ connector event_notification S4_personnel_orchestration.BrokerOut -> externalSys
 // ----------------------------------------------------------
 
 
-// To system 2 (alertas → crítico, cifrado obligatorio) Falta confirmar estos
-  connector control_command S5_central_command_core.Emisor_Alertas -> S2_early_warning_notification {
+// To system 2 (alertas → crítico, cifrado obligatorio)
+  connector control_command S5_central_command_core.Emisor_Alertas -> S2_early_warning_notification.Rec_Alertas {
     style=RequestResponse  protocol=gRPC
     timeout_ms=200  encrypted=true  rate_limit=500
   }
   // From system 2
-  connector event_notification S2_early_warning_notification -> S5_central_command_core.Rec_Alertas {
+  connector event_notification S2_early_warning_notification.Emisor_Alertas -> S5_central_command_core.Rec_Alertas {
     style=MessageQueue  protocol=AMQP
     timeout_ms=300  encrypted=true  rate_limit=500
   }
