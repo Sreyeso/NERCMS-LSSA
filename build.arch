@@ -488,7 +488,26 @@ system_of_systems NERCMS_SoS :
     // SYSTEM 2 (Team 2B)
     // =============================================================
 
-    subsystem S2_early_warning_notification { }
+    subsystem S2_early_warning_notification {
+        component Broker_In : communication event_broker { availability = critical recoverability = fast performance = realtime auth = password security = internal tech = "AMQP" port = 7001 }
+        component Heartbeat_Monitor : communication microservice { availability = high recoverability = fast performance = realtime auth = token security = internal port = 7002 }
+        component Rules_Evaluator : logic microservice { availability = critical recoverability = fast performance = realtime auth = token security = internal port = 7003 }
+        component Dispatcher : logic microservice { availability = high recoverability = fast performance = realtime auth = token security = internal port = 7004 }
+        component SMS_Worker : communication microservice { availability = high recoverability = fast performance = interactive auth = token security = internal port = 7011 }
+        component Mobile_Worker : communication microservice { availability = high recoverability = fast performance = interactive auth = token security = internal port = 7012 }
+        component Radio_TV_Worker : communication microservice { availability = high recoverability = normal performance = interactive auth = token security = internal port = 7013 }
+        component Official_Channels_Worker : communication microservice { availability = high recoverability = normal performance = interactive auth = token security = internal port = 7014 }
+        component Alert_History_DB : data database { availability = high recoverability = fast performance = interactive auth = password security = restricted tech = "PostgreSQL" port = 7020 }
+
+        connector data_stream Broker_In -> Rules_Evaluator { style = MessageQueue protocol = AMQP encrypted = true }
+        connector data_stream Rules_Evaluator -> Dispatcher { style = RequestResponse protocol = Http timeout_ms = 100 encrypted = true }
+        connector dependency Rules_Evaluator -> Alert_History_DB { style = RequestResponse protocol = Http timeout_ms = 500 encrypted = true }
+        connector data_stream Dispatcher -> SMS_Worker { style = MessageQueue protocol = AMQP encrypted = true }
+        connector data_stream Dispatcher -> Mobile_Worker { style = MessageQueue protocol = AMQP encrypted = true }
+        connector data_stream Dispatcher -> Radio_TV_Worker { style = MessageQueue protocol = AMQP encrypted = true }
+        connector data_stream Dispatcher -> Official_Channels_Worker { style = MessageQueue protocol = AMQP encrypted = true }
+        connector dependency Heartbeat_Monitor -> Rules_Evaluator { style = RequestResponse protocol = Http timeout_ms = 100 encrypted = true }
+    }
 
     // =============================================================
     // SYSTEM 3 (Team 2C)
@@ -542,8 +561,8 @@ system_of_systems NERCMS_SoS :
     // ----------------------------------------------------------
 
     // Ruta Rápida: Desde el Borde (Publisher) a otros sistemas
-    connector event_notification S1_data_acquisition_edge.publisher -> S2_early_warning_notification { 
-        style = Pub/Sub 
+    connector event_notification S1_data_acquisition_edge.publisher -> S2_early_warning_notification.Broker_In {
+        style = Pub/Sub
         protocol = AMQP
         timeout_ms = 500
         encrypted = true
@@ -576,32 +595,52 @@ system_of_systems NERCMS_SoS :
     }
 
     // ----------------------------------------------------------
-    // Conectores desde/hacia S4_personnel_orchestration
+    // Conectores desde/hacia S2_early_warning_notification
     // ----------------------------------------------------------
 
+    // S2 Health Check: Heartbeat_Monitor polls S5 availability
+    connector data_stream S2_early_warning_notification.Heartbeat_Monitor -> S5_central_command_core {
+        style = RequestResponse
+        protocol = REST
+        timeout_ms = 500
+        encrypted = true
+    }
+
+    // S2 → S5: Approval requests (Normal mode: S5 coordinates)
+    connector data_stream S2_early_warning_notification.Rules_Evaluator -> S5_central_command_core {
+        style = RequestResponse
+        protocol = REST
+        timeout_ms = 120000  // Abort window (can be 120s in Normal, 60s in Degraded)
+        encrypted = true
+    }
+
     connector event_notification S2_early_warning_notification -> S4_personnel_orchestration.BrokerIn {
-        style = MessageQueue 
-        protocol = Tcp 
-        encrypted = true 
+        style = MessageQueue
+        protocol = Tcp
+        encrypted = true
     }
 
     connector event_notification S5_central_command_core -> S4_personnel_orchestration.BrokerIn {
-        style = MessageQueue 
-        protocol = Tcp 
-        encrypted = true 
+        style = MessageQueue
+        protocol = Tcp
+        encrypted = true
     }
 
-    connector event_notification S4_personnel_orchestration.BrokerOut -> S5_central_command_core { 
-        style = Pub/Sub 
-        protocol = Tcp 
-        encrypted = true 
+    connector event_notification S4_personnel_orchestration.BrokerOut -> S5_central_command_core {
+        style = Pub/Sub
+        protocol = Tcp
+        encrypted = true
     }
 
-    connector event_notification S3_supply_resource_logistics -> S4_personnel_orchestration.BrokerIn { 
-        style = MessageQueue 
-        protocol = Tcp 
-        encrypted = true 
+    // S3 and S4 receive operative orders from S5 (normal mode)
+    connector event_notification S3_supply_resource_logistics -> S4_personnel_orchestration.BrokerIn {
+        style = MessageQueue
+        protocol = Tcp
+        encrypted = true
     }
+
+    // NOTE: S2 publishes alerts to S4's broker. Other systems (S3, S5) can also subscribe independently.
+    // When S5 is down, S3 and S4 read alerts directly from S2's output and make autonomous decisions.
 
     connector data_stream externalSystems -> S4_personnel_orchestration.Gateway { 
         style = RequestResponse 
