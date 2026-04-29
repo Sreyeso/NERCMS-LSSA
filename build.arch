@@ -3,38 +3,35 @@ system_of_systems NERCMS_SoS :
     // =============================================================
     // SYSTEM 1 (Team 2E: Edge Data Acquisition)
     // =============================================================
-    subsystem s1_data_acquisition_edge {
 
-        // ----------------------------------------------------------
-        // Componentes del sistema
-        // ----------------------------------------------------------
+    subsystem S1_data_acquisition_edge {
 
         // ==========================================
-        // Nivel de Sensado 
+        // Nivel de Sensado (sensing)
         // ==========================================
 
-        component hydrological_sensor : physical sensor {
+        component hydrological_sensor : sensing physical sensor {
             availability = critical
             performance = realtime
             auth = password
             security = restricted
         }
 
-        component seismic_sensor : physical sensor {
+        component seismic_sensor : sensing physical sensor {
             availability = critical
             performance = realtime
             auth = password
             security = restricted 
         }
 
-        component atmospheric_sensor : physical sensor {
+        component atmospheric_sensor : sensing physical sensor {
             availability = critical
             performance = realtime
             auth = password
             security = restricted
         }
 
-        component camera : physical sensor {
+        component camera : sensing physical sensor {
             availability = high
             performance = realtime 
             auth = password
@@ -43,12 +40,12 @@ system_of_systems NERCMS_SoS :
         }
 
         // ==========================================
-        // Nivel de Nodos Borde
+        // Nivel de Nodos Borde (edge)
         // ==========================================
         
         // -------- Logic --------
 
-        component data_ingestion_ms : logic microservice {
+        component data_ingestion_ms : edge logic microservice {
             availability = critical
             recoverability = fast
             performance = realtime
@@ -59,7 +56,7 @@ system_of_systems NERCMS_SoS :
             port = 6001
         }
 
-        component notification_mb : logic event_broker {
+        component notification_mb : edge logic event_broker {
             availability = critical
             recoverability = fast
             performance = realtime
@@ -71,7 +68,7 @@ system_of_systems NERCMS_SoS :
             port = 6672
         }
 
-        component data_standardization_ms : logic microservice {
+        component data_standardization_ms : edge logic microservice {
             availability = high
             recoverability = fast
             performance = interactive
@@ -82,7 +79,7 @@ system_of_systems NERCMS_SoS :
             port = 6002
         }
 
-        component reporting_ms : logic microservice {
+        component reporting_ms : edge logic microservice {
             availability = high
             recoverability = normal
             performance = interactive
@@ -93,7 +90,7 @@ system_of_systems NERCMS_SoS :
             port = 6003
         }
 
-        component logging_mb : logic event_broker {
+        component logging_mb : edge logic event_broker {
             availability = high
             recoverability = fast
             performance = realtime
@@ -105,7 +102,7 @@ system_of_systems NERCMS_SoS :
             port = 6673
         }
 
-        component logging_ms : logic microservice {
+        component logging_ms : edge logic microservice {
             availability = high
             recoverability = fast
             performance = interactive
@@ -118,7 +115,7 @@ system_of_systems NERCMS_SoS :
         
         // -------- Data --------
 
-        component raw_data_db : data database {
+        component raw_data_db : edge data database {
             availability = high
             recoverability = fast
             performance = interactive
@@ -130,7 +127,7 @@ system_of_systems NERCMS_SoS :
             port = 6432
         }
 
-        component raw_files : data bucket {
+        component raw_files : edge data bucket {
             availability = high
             recoverability = fast
             performance = interactive
@@ -142,7 +139,7 @@ system_of_systems NERCMS_SoS :
             port = 6900
         }
 
-        component processed_data_db : data database {
+        component processed_data_db : edge data database {
             availability = high
             recoverability = fast
             performance = interactive
@@ -154,7 +151,7 @@ system_of_systems NERCMS_SoS :
             port = 6433
         }
 
-        component processed_files : data bucket {
+        component processed_files : edge data bucket {
             availability = high
             recoverability = fast
             performance = interactive
@@ -166,7 +163,7 @@ system_of_systems NERCMS_SoS :
             port = 6901
         } 
 
-        component logging_db : data database {
+        component logging_db : edge data database {
             availability = high
             recoverability = fast
             performance = interactive
@@ -180,7 +177,7 @@ system_of_systems NERCMS_SoS :
 
         // -------- Communication --------
 
-        component publisher : communication microservice {
+        component publisher : edge communication microservice {
             availability = high
             recoverability = fast
             performance = interactive
@@ -191,7 +188,7 @@ system_of_systems NERCMS_SoS :
             port = 6080
         }
 
-        component edge_ag : communication api_gateway {
+        component edge_ag : edge communication api_gateway {
             availability = high
             recoverability = fast
             performance = interactive
@@ -203,12 +200,12 @@ system_of_systems NERCMS_SoS :
         }
 
         // ==========================================
-        // Nivel de Nodo Central
+        // Nivel de Nodo Central (central)
         // ==========================================
 
         // -------- Presentation --------
 
-        component operator_frontend : presentation web_ui {
+        component operator_frontend : central presentation web_ui {
             availability = standard
             recoverability = normal
             performance = interactive
@@ -221,7 +218,7 @@ system_of_systems NERCMS_SoS :
 
         // -------- Communication --------
 
-        component node_ag : communication api_gateway {
+        component node_ag : central communication api_gateway {
             availability = high
             recoverability = fast
             performance = interactive
@@ -232,7 +229,7 @@ system_of_systems NERCMS_SoS :
             port = 6090
         }
 
-        component interface : communication interface {
+        component interface : central communication interface {
             availability = high
             recoverability = normal
             performance = interactive
@@ -245,7 +242,7 @@ system_of_systems NERCMS_SoS :
 
         // -------- Logic --------
 
-        component topology_ms : logic microservice {
+        component topology_ms : central logic microservice {
             availability = high
             recoverability = normal
             performance = interactive
@@ -256,7 +253,7 @@ system_of_systems NERCMS_SoS :
             port = 6005
         }
 
-        component reporting_center_ms : logic microservice {
+        component reporting_center_ms : central logic microservice {
             availability = high
             recoverability = normal
             performance = interactive
@@ -267,7 +264,7 @@ system_of_systems NERCMS_SoS :
             port = 6006
         }
 
-        component auth_ms : logic microservice {
+        component auth_ms : central logic microservice {
             availability = critical
             recoverability = fast
             performance = interactive
@@ -280,7 +277,7 @@ system_of_systems NERCMS_SoS :
 
         // -------- Data --------
 
-        component topology_status_db : data database {
+        component topology_status_db : central data database {
             availability = high
             recoverability = normal 
             performance = interactive
@@ -292,7 +289,7 @@ system_of_systems NERCMS_SoS :
             port = 6435
         }
 
-        component reporting_db : data database {
+        component reporting_db : central data database {
             availability = high
             recoverability = normal 
             performance = interactive
@@ -304,7 +301,7 @@ system_of_systems NERCMS_SoS :
             port = 6436
         }
 
-        component auth_db : data database {
+        component auth_db : central data database {
             availability = high
             recoverability = normal 
             performance = interactive
@@ -317,12 +314,8 @@ system_of_systems NERCMS_SoS :
         }  
 
         // ----------------------------------------------------------
-        // Conectores del sistema
-        // ----------------------------------------------------------
-
-        // ==========================================
         // Conectores [Sensado -> Borde]
-        // ==========================================
+        // ----------------------------------------------------------
 
         connector event_notification hydrological_sensor -> data_ingestion_ms { 
             style = Pub/Sub
@@ -347,9 +340,9 @@ system_of_systems NERCMS_SoS :
             encrypted = true
         }
 
-        // ==========================================
+        // ----------------------------------------------------------
         // Conectores [Internos Nodo Borde]
-        // ==========================================
+        // ----------------------------------------------------------
 
         // ------- ingestion -> notification_mb -> standardization -------
         
@@ -435,9 +428,9 @@ system_of_systems NERCMS_SoS :
             encrypted = false
         }
 
-        // ==========================================
+        // ----------------------------------------------------------
         // Conectores [Nodo Borde -> Nodo Central]
-        // ==========================================
+        // ----------------------------------------------------------
         
         connector data_stream interface -> edge_ag { 
             style = RequestResponse 
@@ -445,9 +438,9 @@ system_of_systems NERCMS_SoS :
             encrypted = true
         }
 
-        // ==========================================
+        // ----------------------------------------------------------
         // Conectores [Internos Nodo Central]
-        // ==========================================
+        // ----------------------------------------------------------
         
         // ------- Frontend → API Gateway -------
         connector data_stream operator_frontend -> node_ag { 
@@ -491,57 +484,23 @@ system_of_systems NERCMS_SoS :
 
     }
 
-    // Ruta Rápida: Desde el Borde (Publisher) a otros sistemas
-    connector event_notification s1_data_acquisition_edge.publisher -> s2 { 
-        style = Pub/Sub 
-        protocol = AMQP
-        timeout_ms = 500
-        encrypted = true
-    }
-
-    //connector event_notification s1_data_acquisition_edge.publisher -> central_command_core.S1_Message_Queue
-    connector event_notification s1_data_acquisition_edge.publisher -> s5 { 
-        style = Pub/Sub 
-        protocol = AMQP 
-        timeout_ms = 500
-        encrypted = true
-    }
-
-    // Ruta Lenta / Auditoría: Desde el Central (Interface) a otros sistemas
-    //connector data_stream s1_data_acquisition_edge.interface -> central_command_core.Rec_Sensores  
-    connector data_stream s1_data_acquisition_edge.interface -> s5 { 
-        style = RequestResponse 
-        protocol = REST 
-        encrypted = true
-    }
-
-    //connector data_stream central_command_core.Emisor_Sensores -> s1_data_acquisition_edge.interface 
-    connector data_stream s5 -> s1_data_acquisition_edge.interface { 
-        style = RequestResponse 
-        protocol = REST 
-        encrypted = true
-    }
-
-    connector data_stream s2 -> s1_data_acquisition_edge.interface { 
-        style = RequestResponse 
-        protocol = REST 
-        encrypted = true
-    }
-
     // =============================================================
     // SYSTEM 2 (Team 2B)
     // =============================================================
-    subsystem s2 { }
+
+    subsystem S2_early_warning_notification { }
 
     // =============================================================
     // SYSTEM 3 (Team 2C)
     // =============================================================
-    subsystem s3 { }
+
+    subsystem S3_supply_resource_logistics { }
 
     // =============================================================
     // SYSTEM 4 (Team 2A)
     // =============================================================
-    subsystem s4 {
+
+    subsystem S4_personnel_orchestration {
         component Gateway : communication api_gateway { availability = critical recoverability = fast performance = realtime security = internal min_replicas = 2}
         component BrokerIn : communication event_broker { availability = critical recoverability = fast performance = realtime security = public }
         component Controller : logic microservice { availability = high recoverability = fast performance = batch security = restricted }
@@ -560,7 +519,6 @@ system_of_systems NERCMS_SoS :
         connector dependency Blackboard -> Recovery_Db 
         connector dependency Audit -> Audit_Db
         connector event_notification BrokerOut -> Audit { style = Pub/Sub protocol = Tcp encrypted = true }
-        connector event_notification BrokerOut -> s5 { style = Pub/Sub protocol = Tcp encrypted = true }
     }
 
     subsystem externalSystems{
@@ -568,29 +526,132 @@ system_of_systems NERCMS_SoS :
         component CivilDefense : external external_agency 
         component Medics : external external_agency 
         component Rescue : external external_agency 
-
-        connector data_stream FireFighters -> s4.Gateway { style = RequestResponse protocol = Http encrypted = true }
-        connector data_stream CivilDefense -> s4.Gateway { style = RequestResponse protocol = Http encrypted = true }
-
-        connector data_stream Medics -> s4.Gateway { style = RequestResponse protocol = Http encrypted = true }
-        connector data_stream Rescue -> s4.Gateway { style = RequestResponse protocol = Http encrypted = true }
-        
-        connector event_notification s4.BrokerOut -> FireFighters { style = Pub/Sub protocol = Tcp encrypted = true }
-        connector event_notification s4.BrokerOut -> CivilDefense { style = Pub/Sub protocol = Tcp encrypted = true }
-        connector event_notification s4.BrokerOut -> Medics { style = Pub/Sub protocol = Tcp encrypted = true }
-        connector event_notification s4.BrokerOut -> Rescue { style = Pub/Sub protocol = Tcp encrypted = true }
     }
-
-    connector event_notification s2 -> s4.BrokerIn {style = MessageQueue protocol = Tcp encrypted = true }
-    connector event_notification s5 -> s4.BrokerIn { style = MessageQueue protocol = Tcp encrypted = true }
-    connector event_notification s3 -> s4.BrokerIn { style = MessageQueue protocol = Tcp encrypted = true }
 
     // =============================================================
     // SYSTEM 5 (Team 2D)
     // =============================================================
-    subsystem s5 { }
 
-    // -------------------------------------------------------------
+    subsystem S5_central_command_core { }
+
+    // =============================================================
     // CONECTORES GLOBAL SOS
-    // (Opcionales si ya se definen dentro de cada subsistema)
-    // -------------------------------------------------------------
+    // =============================================================
+    
+    // ----------------------------------------------------------
+    // Conectores desde/hacia S1_data_acquisition_edge
+    // ----------------------------------------------------------
+
+    // Ruta Rápida: Desde el Borde (Publisher) a otros sistemas
+    connector event_notification S1_data_acquisition_edge.publisher -> S2_early_warning_notification { 
+        style = Pub/Sub 
+        protocol = AMQP
+        timeout_ms = 500
+        encrypted = true
+    }
+
+    connector event_notification S1_data_acquisition_edge.publisher -> S5_central_command_core { 
+        style = Pub/Sub 
+        protocol = AMQP 
+        timeout_ms = 500
+        encrypted = true
+    }
+
+    // Ruta Lenta / Auditoría: Desde el Central (Interface) a otros sistemas
+    connector data_stream S1_data_acquisition_edge.interface -> S5_central_command_core { 
+        style = RequestResponse 
+        protocol = REST 
+        encrypted = true
+    }
+
+    connector data_stream S5_central_command_core -> S1_data_acquisition_edge.interface { 
+        style = RequestResponse 
+        protocol = REST 
+        encrypted = true
+    }
+
+    connector data_stream S2_early_warning_notification -> S1_data_acquisition_edge.interface { 
+        style = RequestResponse 
+        protocol = REST 
+        encrypted = true
+    }
+
+    // ----------------------------------------------------------
+    // Conectores desde/hacia S4_personnel_orchestration
+    // ----------------------------------------------------------
+
+    connector event_notification S2_early_warning_notification -> S4_personnel_orchestration.BrokerIn {
+        style = MessageQueue 
+        protocol = Tcp 
+        encrypted = true 
+    }
+
+    connector event_notification S5_central_command_core -> S4_personnel_orchestration.BrokerIn {
+        style = MessageQueue 
+        protocol = Tcp 
+        encrypted = true 
+    }
+
+    connector event_notification S4_personnel_orchestration.BrokerOut -> S5_central_command_core { 
+        style = Pub/Sub 
+        protocol = Tcp 
+        encrypted = true 
+    }
+
+    connector event_notification S3_supply_resource_logistics -> S4_personnel_orchestration.BrokerIn { 
+        style = MessageQueue 
+        protocol = Tcp 
+        encrypted = true 
+    }
+
+    connector data_stream externalSystems.FireFighters -> S4_personnel_orchestration.Gateway { 
+        style = RequestResponse 
+        protocol = Http 
+        encrypted = true 
+    }
+
+    connector data_stream externalSystems.CivilDefense -> S4_personnel_orchestration.Gateway { 
+        style = RequestResponse 
+        protocol = Http 
+        encrypted = true 
+    }
+
+    connector data_stream externalSystems.Medics -> S4_personnel_orchestration.Gateway { 
+        style = RequestResponse 
+        protocol = Http 
+        encrypted = true 
+    }
+
+    connector data_stream externalSystems.Rescue -> S4_personnel_orchestration.Gateway { 
+        style = RequestResponse 
+        protocol = Http 
+        encrypted = true 
+    }
+         
+    connector event_notification S4_personnel_orchestration.BrokerOut -> externalSystems.FireFighters { 
+        style = Pub/Sub 
+        protocol = Tcp 
+        encrypted = true 
+    }
+        
+    connector event_notification S4_personnel_orchestration.BrokerOut -> externalSystems.CivilDefense { 
+        style = Pub/Sub 
+        protocol = Tcp 
+        encrypted = true 
+    }
+        
+    connector event_notification S4_personnel_orchestration.BrokerOut -> externalSystems.Medics { 
+        style = Pub/Sub 
+        protocol = Tcp 
+        encrypted = true 
+    }
+        
+    connector event_notification S4_personnel_orchestration.BrokerOut -> externalSystems.Rescue { 
+        style = Pub/Sub 
+        protocol = Tcp 
+        encrypted = true 
+    }
+
+    // ----------------------------------------------------------
+    // Conectores desde/hacia S5_central_command_core
+    // ----------------------------------------------------------

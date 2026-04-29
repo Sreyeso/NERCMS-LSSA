@@ -1,1 +1,1 @@
-subsystem s5 { }
+subsystem S5_central_command_core { }
