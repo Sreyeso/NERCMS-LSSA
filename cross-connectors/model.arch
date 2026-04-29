@@ -3,8 +3,8 @@
 // ----------------------------------------------------------
 
 // Ruta Rápida: Desde el Borde (Publisher) a otros sistemas
-connector event_notification S1_data_acquisition_edge.publisher -> S2_early_warning_notification { 
-    style = Pub/Sub 
+connector event_notification S1_data_acquisition_edge.publisher -> S2_early_warning_notification.Broker_In {
+    style = Pub/Sub
     protocol = AMQP
     timeout_ms = 500
     encrypted = true
@@ -37,31 +37,74 @@ connector data_stream S2_early_warning_notification -> S1_data_acquisition_edge.
 }
 
 // ----------------------------------------------------------
-// Conectores desde/hacia S4_personnel_orchestration
+// Conectores desde/hacia S2_early_warning_notification
 // ----------------------------------------------------------
 
-connector event_notification S2_early_warning_notification -> S4_personnel_orchestration.BrokerIn {
-    style = MessageQueue 
-    protocol = Tcp 
-    encrypted = true 
+// S2 Health Check: Heartbeat_Monitor polls S5 availability
+connector data_stream S2_early_warning_notification.Heartbeat_Monitor -> S5_central_command_core {
+    style = RequestResponse
+    protocol = REST
+    timeout_ms = 500
+    encrypted = true
 }
 
+// S2 → S5: Approval requests (Normal mode: S5 coordinates)
+connector data_stream S2_early_warning_notification.Rules_Evaluator -> S5_central_command_core {
+    style = RequestResponse
+    protocol = REST
+    timeout_ms = 120000  // Abort window (can be 120s in Normal, 60s in Degraded)
+    encrypted = true
+}
+
+// S2 → S5: Alert summary/feedback (S5 can override)
+connector data_stream S2_early_warning_notification.Alert_Manager -> S5_central_command_core {
+    style = RequestResponse
+    protocol = REST
+    timeout_ms = 2000
+    encrypted = true
+}
+
+// S2 → S5: Reconciliation report (Journal_Drainer: async batch after S5 recovery)
+connector data_stream S2_early_warning_notification.Journal_Drainer -> S5_central_command_core {
+    style = RequestResponse
+    protocol = REST
+    timeout_ms = 5000
+    encrypted = true
+}
+
+// S2 → S4: Via S5 in Normal mode (S5 decides coordination)
 connector event_notification S5_central_command_core -> S4_personnel_orchestration.BrokerIn {
-    style = MessageQueue 
-    protocol = Tcp 
-    encrypted = true 
+    style = MessageQueue
+    protocol = Tcp
+    encrypted = true
 }
 
-connector event_notification S4_personnel_orchestration.BrokerOut -> S5_central_command_core { 
-    style = Pub/Sub 
-    protocol = Tcp 
-    encrypted = true 
+// S2 → S4: Direct (Degraded/Autonomous mode: sys2.direct.personnel topic)
+connector event_notification S2_early_warning_notification.Broker_Out -> S4_personnel_orchestration.BrokerIn {
+    style = Pub/Sub
+    protocol = AMQP
+    timeout_ms = 1000
+    encrypted = true
 }
 
-connector event_notification S3_supply_resource_logistics -> S4_personnel_orchestration.BrokerIn { 
-    style = MessageQueue 
-    protocol = Tcp 
-    encrypted = true 
+connector event_notification S4_personnel_orchestration.BrokerOut -> S5_central_command_core {
+    style = Pub/Sub
+    protocol = Tcp
+    encrypted = true
+}
+
+connector event_notification S3_supply_resource_logistics -> S4_personnel_orchestration.BrokerIn {
+    style = MessageQueue
+    protocol = Tcp
+    encrypted = true
+}
+
+// S2 → S3: Direct (Degraded/Autonomous mode: sys2.direct.logistics topic)
+connector event_notification S2_early_warning_notification.Broker_Out -> S3_supply_resource_logistics {
+    style = Pub/Sub
+    protocol = AMQP
+    timeout_ms = 1000
+    encrypted = true
 }
 
 connector data_stream externalSystems -> S4_personnel_orchestration.Gateway { 
