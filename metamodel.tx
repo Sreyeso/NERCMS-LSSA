@@ -4,7 +4,7 @@ Model:
 ; 
 
 ModelElement:
-    Subsystem | Connector | Comment
+    Subsystem | CrossConnector | Comment
 ;
 
 Comment:
@@ -23,8 +23,34 @@ Element:
 ; 
 
 Component: 
-    'component' name=ID ':' tier=TierType type=ComponentType 
+    'component' name=ID ':' (node=NodeType)? tier=TierType type=ComponentType 
     (properties=ComponentProperties)?
+; 
+
+NodeType:
+    'sensing' | 'edge' | 'central'
+;
+
+TierType: 
+    'presentation' | 'communication' | 'logic' | 'data' | 'physical' | 'edge' | 'external' 
+; 
+
+ComponentType: 
+    'web_ui'          | 
+    'interface'       | 
+    'mobile_app'      | 
+    'load_balancer'   | 
+    'api_gateway'     | 
+    'microservice'    | 
+    'domain_service'  | 
+    'event_broker'    | 
+    'dashboard'       | 
+    'database'        | 
+    'data_lake'       | 
+    'bucket'          | 
+    'sensor'          | 
+    'actuator'        |
+    'external_agency'   
 ; 
 
 // Attributes, easily extensibles
@@ -44,38 +70,39 @@ ComponentProperties:
     '}'
 ;
 
-TierType: 
-    'presentation' | 'communication' | 'logic' | 'data' | 'physical' | 'edge' | 'external' 
-; 
+AvailabilityLevel:
+    'critical' | 'high' | 'standard'
+;
 
-// Generalised but still adapted to critical infrastructure context
-ComponentType: 
-    'web_ui'          | 
-    'interface'       | 
-    'mobile_app'      | 
-    'api_gateway'     | 
-    'microservice'    | 
-    'domain_service'  | 
-    'event_broker'    | 
-    'dashboard'       | 
-    'database'        | 
-    'data_lake'       | 
-    'bucket'          | 
-    'edge_node'       | 
-    'sensor'          | 
-    'actuator'        |
-    'external_agency'   
+RecoverabilityLevel:
+    'fast' | 'normal' | 'manual'
+;
+
+PerformanceLevel:
+    'realtime' | 'interactive' | 'batch'
+;
+
+AuthLevel:
+    'token' | 'cookie' | 'password' | 'mfa' | 'keypass'
+;
+
+SecurityLevel:
+    'restricted' | 'internal' | 'public'
+;
+
+Connector:
+    'connector' type=ConnectorType from=[Component] '->' to=[Component] 
+    (properties=ConnectorProperties)?
+;
+
+CrossConnector: 
+    'connector' type=ConnectorType from=[Connectable|FQN] '->' to=[Connectable|FQN] 
+    (properties=ConnectorProperties)?
 ; 
 
 Connectable:
     Component | Subsystem
 ;
-
-// Enriched connectors with protocol information
-Connector: 
-    'connector' type=ConnectorType from=[Connectable|FQN] '->' to=[Connectable|FQN] 
-    (properties=ConnectorProperties)?
-; 
 
 FQN:
     ID ('.' ID)*
@@ -96,32 +123,12 @@ ConnectorProperties:
         ('encrypted'  '=' encrypted  = BOOL)?
         ('rate_limit' '=' rate_limit = INT)?
     '}'
-; 
-
-ProtocolType:
-    'Tcp' | 'WebSockets' | 'Http' | 'gRPC' |'MQTT' | 'AMQP' | 'REST' | 'RTCP'
 ;
 
 InteractionStyle:
     'RequestResponse' | 'MessageQueue' | 'Pub/Sub'
 ;
 
-AvailabilityLevel:
-    'critical' | 'high' | 'standard'
-;
-
-PerformanceLevel:
-    'realtime' | 'interactive' | 'batch'
-;
-
-SecurityLevel:
-    'restricted' | 'internal' | 'public'
-;
-
-AuthLevel:
-    'token' | 'cookie' | 'password' | 'mfa' | 'keypass'
-;
-
-RecoverabilityLevel:
-    'fast' | 'normal' | 'manual'
+ProtocolType:
+    'Tcp' | 'WebSockets' | 'Http' | 'gRPC' |'MQTT' | 'AMQP' | 'REST' | 'RTSP'
 ;

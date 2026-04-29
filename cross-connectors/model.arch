@@ -1,0 +1,83 @@
+// ----------------------------------------------------------
+// Conectores desde/hacia S1_data_acquisition_edge
+// ----------------------------------------------------------
+
+// Ruta Rápida: Desde el Borde (Publisher) a otros sistemas
+connector event_notification S1_data_acquisition_edge.publisher -> S2_early_warning_notification { 
+    style = Pub/Sub 
+    protocol = AMQP
+    timeout_ms = 500
+    encrypted = true
+}
+
+connector event_notification S1_data_acquisition_edge.publisher -> S5_central_command_core { 
+    style = Pub/Sub 
+    protocol = AMQP 
+    timeout_ms = 500
+    encrypted = true
+}
+
+// Ruta Lenta / Auditoría: Desde el Central (Interface) a otros sistemas
+connector data_stream S1_data_acquisition_edge.interface -> S5_central_command_core { 
+    style = RequestResponse 
+    protocol = REST 
+    encrypted = true
+}
+
+connector data_stream S5_central_command_core -> S1_data_acquisition_edge.interface { 
+    style = RequestResponse 
+    protocol = REST 
+    encrypted = true
+}
+
+connector data_stream S2_early_warning_notification -> S1_data_acquisition_edge.interface { 
+    style = RequestResponse 
+    protocol = REST 
+    encrypted = true
+}
+
+// ----------------------------------------------------------
+// Conectores desde/hacia S4_personnel_orchestration
+// ----------------------------------------------------------
+
+connector event_notification S2_early_warning_notification -> S4_personnel_orchestration.BrokerIn {
+    style = MessageQueue 
+    protocol = Tcp 
+    encrypted = true 
+}
+
+connector event_notification S5_central_command_core -> S4_personnel_orchestration.BrokerIn {
+    style = MessageQueue 
+    protocol = Tcp 
+    encrypted = true 
+}
+
+connector event_notification S4_personnel_orchestration.BrokerOut -> S5_central_command_core { 
+    style = Pub/Sub 
+    protocol = Tcp 
+    encrypted = true 
+}
+
+connector event_notification S3_supply_resource_logistics -> S4_personnel_orchestration.BrokerIn { 
+    style = MessageQueue 
+    protocol = Tcp 
+    encrypted = true 
+}
+
+connector data_stream externalSystems -> S4_personnel_orchestration.Gateway { 
+    style = RequestResponse 
+    protocol = Http 
+    encrypted = true 
+}
+     
+connector event_notification S4_personnel_orchestration.BrokerOut -> externalSystems { 
+    style = Pub/Sub 
+    protocol = Tcp 
+    encrypted = true 
+}
+    
+
+// ----------------------------------------------------------
+// Conectores desde/hacia S5_central_command_core
+// ----------------------------------------------------------
+

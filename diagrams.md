@@ -3,99 +3,155 @@
 ## System of Systems (Global)
 
 ```mermaid
-graph TD
-    data_acquisition_edge[[data_acquisition_edge]]
-    s2[[s2]]
-    s3[[s3]]
-    s4[[s4]]
+graph LR
+    S1_data_acquisition_edge[[S1_data_acquisition_edge]]
+    S2_early_warning_notification[[S2_early_warning_notification]]
+    S3_supply_resource_logistics[[S3_supply_resource_logistics]]
+    S4_personnel_orchestration[[S4_personnel_orchestration]]
     externalSystems[[externalSystems]]
-    s5[[s5]]
+    S5_central_command_core[[S5_central_command_core]]
 
-    data_acquisition_edge -- "event_notification (AMQP)" --> s2
-    data_acquisition_edge -- "event_notification (AMQP)" --> s5
-    data_acquisition_edge -- "data_stream (Http)" --> s2
-    data_acquisition_edge -- "data_stream (Http)" --> s5
-    s2 -- "event_notification (Tcp)" --> s4
-    s5 -- "event_notification (Tcp)" --> s4
-    s3 -- "event_notification (Tcp)" --> s4
+    S1_data_acquisition_edge -- "event_notification (AMQP)" --> S2_early_warning_notification
+    S1_data_acquisition_edge -- "event_notification (AMQP)" --> S5_central_command_core
+    S1_data_acquisition_edge -- "data_stream (REST)" --> S5_central_command_core
+    S5_central_command_core -- "data_stream (REST)" --> S1_data_acquisition_edge
+    S2_early_warning_notification -- "data_stream (REST)" --> S1_data_acquisition_edge
+    S2_early_warning_notification -- "event_notification (Tcp)" --> S4_personnel_orchestration
+    S5_central_command_core -- "event_notification (Tcp)" --> S4_personnel_orchestration
+    S4_personnel_orchestration -- "event_notification (Tcp)" --> S5_central_command_core
+    S3_supply_resource_logistics -- "event_notification (Tcp)" --> S4_personnel_orchestration
+    externalSystems -- "data_stream (Http)" --> S4_personnel_orchestration
+    S4_personnel_orchestration -- "event_notification (Tcp)" --> externalSystems
 ```
 
-## Subsystem: data_acquisition_edge
+## Subsystem: S1_data_acquisition_edge
 
 ```mermaid
-graph TD
-    edge_node_regional["edge_node_regional<br/>(edge_node)"]
-    hydro_sensor["hydro_sensor<br/>(sensor)"]
-    seismic_sensor["seismic_sensor<br/>(sensor)"]
-    atmo_sensor["atmo_sensor<br/>(sensor)"]
-    camera["camera<br/>(sensor)"]
-    data_ingestion_ms["data_ingestion_ms<br/>(microservice)"]
-    data_standarization_ms["data_standarization_ms<br/>(microservice)"]
-    publisher["publisher<br/>(microservice)"]
-    db_raw_data_storage["db_raw_data_storage<br/>(database)"]
-    bucket_raw_files_storage["bucket_raw_files_storage<br/>(data_lake)"]
-    processed_data_db["processed_data_db<br/>(database)"]
-    bucket_processing_file_storage["bucket_processing_file_storage<br/>(data_lake)"]
-    file_storage_metadata["file_storage_metadata<br/>(database)"]
-    processing_unit_ms["processing_unit_ms<br/>(microservice)"]
-    topology_status_db["topology_status_db<br/>(database)"]
-    report_db["report_db<br/>(database)"]
-    operator_frontend["operator_frontend<br/>(web_ui)"]
-    interface_gateway["interface_gateway<br/>(api_gateway)"]
-    client_web_browser["client_web_browser<br/>(web_ui)"]
+graph LR
+    subgraph S1_data_acquisition_edge
+        subgraph S1_data_acquisition_edge_sensing[sensing]
+            subgraph S1_data_acquisition_edge_sensing_physical[physical]
+                hydrological_sensor["hydrological_sensor<br/>(sensor)"]
+                seismic_sensor["seismic_sensor<br/>(sensor)"]
+                atmospheric_sensor["atmospheric_sensor<br/>(sensor)"]
+                camera["camera<br/>(sensor)"]
+            end
+        end
+        subgraph S1_data_acquisition_edge_edge[edge]
+            subgraph S1_data_acquisition_edge_edge_communication[communication]
+                publisher["publisher<br/>(microservice)"]
+                edge_ag["edge_ag<br/>(api_gateway)"]
+            end
+            subgraph S1_data_acquisition_edge_edge_logic[logic]
+                data_ingestion_ms["data_ingestion_ms<br/>(microservice)"]
+                notification_mb["notification_mb<br/>(event_broker)"]
+                data_standardization_ms["data_standardization_ms<br/>(microservice)"]
+                reporting_ms["reporting_ms<br/>(microservice)"]
+                logging_mb["logging_mb<br/>(event_broker)"]
+                logging_ms["logging_ms<br/>(microservice)"]
+            end
+            subgraph S1_data_acquisition_edge_edge_data[data]
+                raw_data_db["raw_data_db<br/>(database)"]
+                raw_files["raw_files<br/>(bucket)"]
+                processed_data_db["processed_data_db<br/>(database)"]
+                processed_files["processed_files<br/>(bucket)"]
+                logging_db["logging_db<br/>(database)"]
+            end
+        end
+        subgraph S1_data_acquisition_edge_central[central]
+            subgraph S1_data_acquisition_edge_central_presentation[presentation]
+                operator_frontend["operator_frontend<br/>(web_ui)"]
+            end
+            subgraph S1_data_acquisition_edge_central_communication[communication]
+                node_ag["node_ag<br/>(api_gateway)"]
+                interface["interface<br/>(interface)"]
+            end
+            subgraph S1_data_acquisition_edge_central_logic[logic]
+                topology_ms["topology_ms<br/>(microservice)"]
+                reporting_center_ms["reporting_center_ms<br/>(microservice)"]
+                auth_ms["auth_ms<br/>(microservice)"]
+            end
+            subgraph S1_data_acquisition_edge_central_data[data]
+                topology_status_db["topology_status_db<br/>(database)"]
+                reporting_db["reporting_db<br/>(database)"]
+                auth_db["auth_db<br/>(database)"]
+            end
+        end
 
-    hydro_sensor -- "data_stream (MQTT)" --> data_ingestion_ms
-    seismic_sensor -- "data_stream (MQTT)" --> data_ingestion_ms
-    atmo_sensor -- "data_stream (MQTT)" --> data_ingestion_ms
-    camera -- "data_stream (WebSockets)" --> data_ingestion_ms
-    data_ingestion_ms -- "event_notification (AMQP)" --> data_standarization_ms
-    data_standarization_ms -- "event_notification (AMQP)" --> publisher
-    data_ingestion_ms -- "dependency" --> db_raw_data_storage
-    data_ingestion_ms -- "dependency" --> bucket_raw_files_storage
-    data_ingestion_ms -- "dependency" --> file_storage_metadata
-    data_standarization_ms -- "dependency" --> processed_data_db
-    data_standarization_ms -- "dependency" --> bucket_processing_file_storage
-    data_standarization_ms -- "dependency" --> file_storage_metadata
-    data_standarization_ms -- "dependency" --> db_raw_data_storage
-    data_standarization_ms -- "dependency" --> bucket_raw_files_storage
-    publisher -- "dependency" --> processed_data_db
-    publisher -- "dependency" --> bucket_processing_file_storage
-    data_standarization_ms -- "data_stream (Http)" --> interface_gateway
-    interface_gateway -- "data_stream (Http)" --> processing_unit_ms
-    processing_unit_ms -- "data_stream (Http)" --> interface_gateway
-    operator_frontend -- "data_stream (Http)" --> processing_unit_ms
-    client_web_browser -- "data_stream (Http)" --> operator_frontend
-    processing_unit_ms -- "dependency" --> topology_status_db
-    processing_unit_ms -- "dependency" --> report_db
+    hydrological_sensor -- "event_notification (MQTT)" --> data_ingestion_ms
+    seismic_sensor -- "event_notification (MQTT)" --> data_ingestion_ms
+    atmospheric_sensor -- "event_notification (MQTT)" --> data_ingestion_ms
+    camera -- "data_stream (RTSP)" --> data_ingestion_ms
+    data_ingestion_ms -- "event_notification (AMQP)" --> notification_mb
+    notification_mb -- "event_notification (AMQP)" --> data_standardization_ms
+    edge_ag -- "data_stream (REST)" --> reporting_ms
+    edge_ag -- "data_stream (REST)" --> logging_ms
+    data_ingestion_ms -- "dependency (Tcp)" --> raw_data_db
+    data_ingestion_ms -- "dependency (Http)" --> raw_files
+    data_standardization_ms -- "dependency (Tcp)" --> raw_data_db
+    data_standardization_ms -- "dependency (Http)" --> raw_files
+    data_standardization_ms -- "dependency (Tcp)" --> processed_data_db
+    data_standardization_ms -- "dependency (Http)" --> processed_files
+    publisher -- "dependency (Tcp)" --> processed_data_db
+    publisher -- "dependency (Http)" --> processed_files
+    reporting_ms -- "dependency (Tcp)" --> processed_data_db
+    reporting_ms -- "dependency (Http)" --> processed_files
+    logging_mb -- "event_notification (AMQP)" --> logging_ms
+    logging_ms -- "dependency (Tcp)" --> logging_db
+    edge_ag -- "event_notification (AMQP)" --> logging_mb
+    data_ingestion_ms -- "event_notification (AMQP)" --> logging_mb
+    data_standardization_ms -- "event_notification (AMQP)" --> logging_mb
+    reporting_ms -- "event_notification (AMQP)" --> logging_mb
+    publisher -- "event_notification (AMQP)" --> logging_mb
+    interface -- "data_stream (REST)" --> edge_ag
+    operator_frontend -- "data_stream (REST)" --> node_ag
+    interface -- "data_stream (REST)" --> node_ag
+    node_ag -- "data_stream (REST)" --> topology_ms
+    node_ag -- "data_stream (REST)" --> reporting_center_ms
+    node_ag -- "data_stream (REST)" --> auth_ms
+    topology_ms -- "dependency (Tcp)" --> topology_status_db
+    reporting_center_ms -- "dependency (Tcp)" --> reporting_db
+    auth_ms -- "dependency (Tcp)" --> auth_db
+    end
 ```
 
-## Subsystem: s2
+## Subsystem: S2_early_warning_notification
 
 ```mermaid
-graph TD
+graph LR
+    subgraph S2_early_warning_notification
 
+    end
 ```
 
-## Subsystem: s3
+## Subsystem: S3_supply_resource_logistics
 
 ```mermaid
-graph TD
+graph LR
+    subgraph S3_supply_resource_logistics
 
+    end
 ```
 
-## Subsystem: s4
+## Subsystem: S4_personnel_orchestration
 
 ```mermaid
-graph TD
-    Gateway["Gateway<br/>(api_gateway)"]
-    BrokerIn["BrokerIn<br/>(event_broker)"]
-    Controller["Controller<br/>(microservice)"]
-    Blackboard["Blackboard<br/>(domain_service)"]
-    Audit["Audit<br/>(microservice)"]
-    Health["Health<br/>(microservice)"]
-    BrokerOut["BrokerOut<br/>(event_broker)"]
-    Audit_Db["Audit_Db<br/>(database)"]
-    Recovery_Db["Recovery_Db<br/>(database)"]
+graph LR
+    subgraph S4_personnel_orchestration
+        subgraph S4_personnel_orchestration_undefined_communication[communication]
+            Gateway["Gateway<br/>(api_gateway)"]
+            BrokerIn["BrokerIn<br/>(event_broker)"]
+            BrokerOut["BrokerOut<br/>(event_broker)"]
+        end
+        subgraph S4_personnel_orchestration_undefined_logic[logic]
+            Controller["Controller<br/>(microservice)"]
+            Blackboard["Blackboard<br/>(domain_service)"]
+            Audit["Audit<br/>(microservice)"]
+        end
+        subgraph S4_personnel_orchestration_undefined_data[data]
+            Audit_Db["Audit_Db<br/>(database)"]
+            Recovery_Db["Recovery_Db<br/>(database)"]
+        end
 
     Gateway -- "data_stream (AMQP)" --> BrokerIn
     BrokerIn -- "event_notification (AMQP)" --> Controller
@@ -105,31 +161,29 @@ graph TD
     Blackboard -- "dependency" --> Recovery_Db
     Audit -- "dependency" --> Audit_Db
     BrokerOut -- "event_notification (Tcp)" --> Audit
-    BrokerOut -- "event_notification (Tcp)" --> s5
+    end
 ```
 
 ## Subsystem: externalSystems
 
 ```mermaid
-graph TD
-    FireFighters["FireFighters<br/>(external_agency)"]
-    CivilDefense["CivilDefense<br/>(external_agency)"]
-    Medics["Medics<br/>(external_agency)"]
-    Rescue["Rescue<br/>(external_agency)"]
+graph LR
+    subgraph externalSystems
+        subgraph externalSystems_undefined_external[external]
+            FireFighters["FireFighters<br/>(external_agency)"]
+            CivilDefense["CivilDefense<br/>(external_agency)"]
+            Medics["Medics<br/>(external_agency)"]
+            Rescue["Rescue<br/>(external_agency)"]
+        end
 
-    FireFighters -- "data_stream (Http)" --> Gateway
-    CivilDefense -- "data_stream (Http)" --> Gateway
-    Medics -- "data_stream (Http)" --> Gateway
-    Rescue -- "data_stream (Http)" --> Gateway
-    BrokerOut -- "event_notification (Tcp)" --> FireFighters
-    BrokerOut -- "event_notification (Tcp)" --> CivilDefense
-    BrokerOut -- "event_notification (Tcp)" --> Medics
-    BrokerOut -- "event_notification (Tcp)" --> Rescue
+    end
 ```
 
-## Subsystem: s5
+## Subsystem: S5_central_command_core
 
 ```mermaid
-graph TD
+graph LR
+    subgraph S5_central_command_core
 
+    end
 ```

@@ -3,89 +3,509 @@ system_of_systems NERCMS_SoS :
     // =============================================================
     // SYSTEM 1 (Team 2E: Edge Data Acquisition)
     // =============================================================
-    subsystem data_acquisition_edge {
 
-        component edge_node_regional : edge edge_node { tech="container-runtime" }
+    subsystem S1_data_acquisition_edge {
 
-        component hydro_sensor    : physical sensor { tech="hydrological-station" }
-        component seismic_sensor  : physical sensor { tech="seismograph" }
-        component atmo_sensor     : physical sensor { tech="weather-station" }
-        component camera          : physical sensor { tech="ip-camera-rtsp" }
+        // ==========================================
+        // Nivel de Sensado (sensing)
+        // ==========================================
 
-        component data_ingestion_ms       : logic microservice { tech="python-flask" port=8101 }
-        component data_standarization_ms  : logic microservice { tech="python-flask" port=8102 }
-        component publisher               : logic microservice { tech="python-flask" port=8103 }
+        component hydrological_sensor : sensing physical sensor {
+            availability = critical
+            performance = realtime
+            auth = password
+            security = restricted
+        }
 
-        component db_raw_data_storage            : data database  { tech="postgresql" port=5432 }
-        component bucket_raw_files_storage       : data data_lake { tech="minio" port=9000 }
-        component processed_data_db              : data database  { tech="postgresql" port=5433 }
-        component bucket_processing_file_storage : data data_lake { tech="minio" port=9001 }
-        component file_storage_metadata          : data database  { tech="postgresql" port=5434 }
+        component seismic_sensor : sensing physical sensor {
+            availability = critical
+            performance = realtime
+            auth = password
+            security = restricted 
+        }
 
-        component processing_unit_ms  : logic microservice        { tech="python-flask" port=8200 }
-        component topology_status_db  : data database              { tech="postgresql"  port=5435 }
-        component report_db           : data database              { tech="postgresql"  port=5436 }
-        component operator_frontend   : presentation web_ui        { tech="react"       port=3000 }
-        component interface_gateway   : communication api_gateway  { tech="nginx"       port=8080 }
-        component client_web_browser  : presentation web_ui        { tech="web-browser" }
+        component atmospheric_sensor : sensing physical sensor {
+            availability = critical
+            performance = realtime
+            auth = password
+            security = restricted
+        }
 
-        connector data_stream hydro_sensor   -> data_ingestion_ms { protocol=MQTT }
-        connector data_stream seismic_sensor -> data_ingestion_ms { protocol=MQTT }
-        connector data_stream atmo_sensor    -> data_ingestion_ms { protocol=MQTT }
-        connector data_stream camera         -> data_ingestion_ms { protocol=WebSockets }
+        component camera : sensing physical sensor {
+            availability = high
+            performance = realtime 
+            auth = password
+            security = restricted
+            port = 6554
+        }
 
-        connector event_notification data_ingestion_ms       -> data_standarization_ms { style=MessageQueue protocol=AMQP }
-        connector event_notification data_standarization_ms  -> publisher              { style=MessageQueue protocol=AMQP }
+        // ==========================================
+        // Nivel de Nodos Borde (edge)
+        // ==========================================
+        
+        // -------- Logic --------
 
-        connector dependency data_ingestion_ms -> db_raw_data_storage
-        connector dependency data_ingestion_ms -> bucket_raw_files_storage
-        connector dependency data_ingestion_ms -> file_storage_metadata
+        component data_ingestion_ms : edge logic microservice {
+            availability = critical
+            recoverability = fast
+            performance = realtime
+            auth = token
+            security = internal
+            mem_limit = "512Mi"
+            cpu_limit = 0.5
+            port = 6001
+        }
 
-        connector dependency data_standarization_ms -> processed_data_db
-        connector dependency data_standarization_ms -> bucket_processing_file_storage
-        connector dependency data_standarization_ms -> file_storage_metadata
+        component notification_mb : edge logic event_broker {
+            availability = critical
+            recoverability = fast
+            performance = realtime
+            auth = password
+            security = internal
+            mem_limit = "1.5Gi"
+            cpu_limit = 0.7
+            tech = "RabbitMQ/Kafka"
+            port = 6672
+        }
 
-        connector dependency data_standarization_ms -> db_raw_data_storage
-        connector dependency data_standarization_ms -> bucket_raw_files_storage
+        component data_standardization_ms : edge logic microservice {
+            availability = high
+            recoverability = fast
+            performance = interactive
+            auth = token
+            security = internal
+            mem_limit = "1Gi"
+            cpu_limit = 1.0
+            port = 6002
+        }
 
-        connector dependency publisher -> processed_data_db
-        connector dependency publisher -> bucket_processing_file_storage
+        component reporting_ms : edge logic microservice {
+            availability = high
+            recoverability = normal
+            performance = interactive
+            auth = token
+            security = internal
+            mem_limit = "512Mi"
+            cpu_limit = 0.5
+            port = 6003
+        }
 
-        connector data_stream data_standarization_ms -> interface_gateway   { style=RequestResponse protocol=Http }
+        component logging_mb : edge logic event_broker {
+            availability = high
+            recoverability = fast
+            performance = realtime
+            auth = password
+            security = internal
+            mem_limit = "1Gi"
+            cpu_limit = 0.5
+            tech = "RabbitMQ/Kafka"
+            port = 6673
+        }
 
-        connector data_stream interface_gateway     -> processing_unit_ms { style=RequestResponse protocol=Http }
-        connector data_stream processing_unit_ms    -> interface_gateway  { style=RequestResponse protocol=Http }
-        connector data_stream operator_frontend     -> processing_unit_ms { style=RequestResponse protocol=Http }
-        connector data_stream client_web_browser    -> operator_frontend  { style=RequestResponse protocol=Http }
-        connector dependency  processing_unit_ms -> topology_status_db
-        connector dependency  processing_unit_ms -> report_db
+        component logging_ms : edge logic microservice {
+            availability = high
+            recoverability = fast
+            performance = interactive
+            auth = token
+            security = internal
+            mem_limit = "512Mi"
+            cpu_limit = 0.5
+            port = 6004
+        }
+        
+        // -------- Data --------
+
+        component raw_data_db : edge data database {
+            availability = high
+            recoverability = fast
+            performance = interactive
+            auth = password
+            security = internal
+            mem_limit = "2Gi"
+            cpu_limit = 0.7
+            tech = "PostgreSQL"
+            port = 6432
+        }
+
+        component raw_files : edge data bucket {
+            availability = high
+            recoverability = fast
+            performance = interactive
+            auth = password
+            security = internal
+            mem_limit = "10Gi"
+            cpu_limit = 0.5
+            tech = "S3-Compatible"
+            port = 6900
+        }
+
+        component processed_data_db : edge data database {
+            availability = high
+            recoverability = fast
+            performance = interactive
+            auth = password
+            security = internal
+            mem_limit = "3Gi"
+            cpu_limit = 1.0
+            tech = "PostgreSQL"
+            port = 6433
+        }
+
+        component processed_files : edge data bucket {
+            availability = high
+            recoverability = fast
+            performance = interactive
+            auth = password
+            security = internal
+            mem_limit = "15Gi"
+            cpu_limit = 0.5
+            tech = "S3-Compatible"
+            port = 6901
+        } 
+
+        component logging_db : edge data database {
+            availability = high
+            recoverability = fast
+            performance = interactive
+            auth = password
+            security = internal
+            mem_limit = "2Gi"
+            cpu_limit = 0.5
+            tech = "PostgreSQL"
+            port = 6434
+        }
+
+        // -------- Communication --------
+
+        component publisher : edge communication microservice {
+            availability = high
+            recoverability = fast
+            performance = interactive
+            auth = token
+            security = internal
+            mem_limit = "256Mi"
+            cpu_limit = 0.3
+            port = 6080
+        }
+
+        component edge_ag : edge communication api_gateway {
+            availability = high
+            recoverability = fast
+            performance = interactive
+            auth = token
+            security = restricted
+            mem_limit = "512Mi"
+            cpu_limit = 0.6
+            port = 6081
+        }
+
+        // ==========================================
+        // Nivel de Nodo Central (central)
+        // ==========================================
+
+        // -------- Presentation --------
+
+        component operator_frontend : central presentation web_ui {
+            availability = standard
+            recoverability = normal
+            performance = interactive
+            auth = mfa
+            security = restricted
+            mem_limit = "512Mi"
+            cpu_limit = 0.3
+            port = 6443
+        }
+
+        // -------- Communication --------
+
+        component node_ag : central communication api_gateway {
+            availability = high
+            recoverability = fast
+            performance = interactive
+            auth = token
+            security = restricted
+            mem_limit = "1Gi"
+            cpu_limit = 1.0
+            port = 6090
+        }
+
+        component interface : central communication interface {
+            availability = high
+            recoverability = normal
+            performance = interactive
+            auth = token
+            security = restricted
+            mem_limit = "512Mi"
+            cpu_limit = 0.5
+            port = 6091
+        }
+
+        // -------- Logic --------
+
+        component topology_ms : central logic microservice {
+            availability = high
+            recoverability = normal
+            performance = interactive
+            auth = token
+            security = internal
+            mem_limit = "512Mi"
+            cpu_limit = 0.5
+            port = 6005
+        }
+
+        component reporting_center_ms : central logic microservice {
+            availability = high
+            recoverability = normal
+            performance = interactive
+            auth = token
+            security = internal
+            mem_limit = "512Mi"
+            cpu_limit = 0.5
+            port = 6006
+        }
+
+        component auth_ms : central logic microservice {
+            availability = critical
+            recoverability = fast
+            performance = interactive
+            auth = token
+            security = restricted
+            mem_limit = "512Mi"
+            cpu_limit = 1.0
+            port = 6007
+        }
+
+        // -------- Data --------
+
+        component topology_status_db : central data database {
+            availability = high
+            recoverability = normal 
+            performance = interactive
+            auth = password
+            security = internal
+            mem_limit = "1Gi"
+            cpu_limit = 0.5
+            tech = "PostgreSQL"
+            port = 6435
+        }
+
+        component reporting_db : central data database {
+            availability = high
+            recoverability = normal 
+            performance = interactive
+            auth = password
+            security = internal
+            mem_limit = "1Gi"
+            cpu_limit = 0.5
+            tech = "PostgreSQL"
+            port = 6436
+        }
+
+        component auth_db : central data database {
+            availability = high
+            recoverability = normal 
+            performance = interactive
+            auth = password
+            security = internal
+            mem_limit = "512Mi"
+            cpu_limit = 0.4
+            tech = "PostgreSQL"
+            port = 6437
+        }  
+
+        // ----------------------------------------------------------
+        // Conectores [Sensado -> Borde]
+        // ----------------------------------------------------------
+
+        connector event_notification hydrological_sensor -> data_ingestion_ms { 
+            style = Pub/Sub
+            protocol = MQTT 
+            encrypted = true
+        }
+
+        connector event_notification seismic_sensor -> data_ingestion_ms { 
+            style = Pub/Sub
+            protocol = MQTT 
+            encrypted = true
+        }
+
+        connector event_notification atmospheric_sensor -> data_ingestion_ms { 
+            style = Pub/Sub
+            protocol = MQTT 
+            encrypted = true
+        }
+
+        connector data_stream camera -> data_ingestion_ms { 
+            protocol = RTSP 
+            encrypted = true
+        }
+
+        // ----------------------------------------------------------
+        // Conectores [Internos Nodo Borde]
+        // ----------------------------------------------------------
+
+        // ------- ingestion -> notification_mb -> standardization -------
+        
+        connector event_notification data_ingestion_ms -> notification_mb { 
+            style = Pub/Sub 
+            protocol = AMQP
+            encrypted = false
+        }
+
+        connector event_notification notification_mb -> data_standardization_ms { 
+            style = Pub/Sub  
+            protocol = AMQP
+            encrypted = false
+        }
+
+        // ------- API Gateway → servicios -------
+
+        connector data_stream edge_ag -> reporting_ms {
+            style = RequestResponse
+            protocol = REST
+            encrypted = true
+        }
+
+        connector data_stream edge_ag -> logging_ms {
+            style = RequestResponse
+            protocol = REST
+            encrypted = true
+        }
+
+        // ------- component -> almacenamiento raw -------
+
+        connector dependency data_ingestion_ms -> raw_data_db { protocol = Tcp }
+        connector dependency data_ingestion_ms -> raw_files { protocol = Http }
+        connector dependency data_standardization_ms -> raw_data_db { protocol = Tcp }
+        connector dependency data_standardization_ms -> raw_files { protocol = Http }
+        
+        // ------- component -> almacenamiento processed -------
+
+        connector dependency data_standardization_ms -> processed_data_db { protocol = Tcp }
+        connector dependency data_standardization_ms -> processed_files { protocol = Http }
+        connector dependency publisher -> processed_data_db { protocol = Tcp }
+        connector dependency publisher -> processed_files { protocol = Http }
+        connector dependency reporting_ms -> processed_data_db { protocol = Tcp }
+        connector dependency reporting_ms -> processed_files { protocol = Http }
+
+        // ------- logging -------
+
+        connector event_notification logging_mb -> logging_ms {
+            style = MessageQueue
+            protocol = AMQP
+            encrypted = false
+        }
+
+        connector dependency logging_ms -> logging_db { protocol = Tcp }
+
+        connector event_notification edge_ag -> logging_mb {
+            style = Pub/Sub
+            protocol = AMQP
+            encrypted = false
+        }
+
+        connector event_notification data_ingestion_ms -> logging_mb {
+            style = Pub/Sub
+            protocol = AMQP
+            encrypted = false
+        }
+
+        connector event_notification data_standardization_ms -> logging_mb {
+            style = Pub/Sub
+            protocol = AMQP
+            encrypted = false
+        }
+
+        connector event_notification reporting_ms -> logging_mb {
+            style = Pub/Sub
+            protocol = AMQP
+            encrypted = false
+        }
+
+        connector event_notification publisher -> logging_mb {
+            style = Pub/Sub
+            protocol = AMQP
+            encrypted = false
+        }
+
+        // ----------------------------------------------------------
+        // Conectores [Nodo Borde -> Nodo Central]
+        // ----------------------------------------------------------
+        
+        connector data_stream interface -> edge_ag { 
+            style = RequestResponse 
+            protocol = REST 
+            encrypted = true
+        }
+
+        // ----------------------------------------------------------
+        // Conectores [Internos Nodo Central]
+        // ----------------------------------------------------------
+        
+        // ------- Frontend → API Gateway -------
+        connector data_stream operator_frontend -> node_ag { 
+            style = RequestResponse
+            protocol = REST
+            encrypted = true
+        }
+
+        // ------- API Gateway → interface -------
+
+        connector data_stream interface -> node_ag { 
+            style = RequestResponse 
+            protocol = REST 
+            encrypted = true
+        }
+
+        // ------- API Gateway → servicios -------
+        connector data_stream node_ag -> topology_ms {
+            style = RequestResponse
+            protocol = REST
+            encrypted = true
+        }
+
+        connector data_stream node_ag -> reporting_center_ms {
+            style = RequestResponse
+            protocol = REST
+            encrypted = true
+        }
+
+        connector data_stream node_ag -> auth_ms {
+            style = RequestResponse
+            protocol = REST
+            encrypted = true
+        }
+
+        // ------- Servicios → DBs -------
+
+        connector dependency topology_ms -> topology_status_db { protocol = Tcp }
+        connector dependency reporting_center_ms -> reporting_db { protocol = Tcp }
+        connector dependency auth_ms -> auth_db { protocol = Tcp }
+
     }
-
-    connector event_notification data_acquisition_edge.publisher          -> s2 { style=MessageQueue protocol=AMQP }
-    connector event_notification data_acquisition_edge.publisher          -> s5 { style=MessageQueue protocol=AMQP }
-    connector data_stream        data_acquisition_edge.interface_gateway  -> s2 { style=RequestResponse protocol=Http }
-    connector data_stream        data_acquisition_edge.interface_gateway  -> s5 { style=RequestResponse protocol=Http }
 
     // =============================================================
     // SYSTEM 2 (Team 2B)
     // =============================================================
-    subsystem s2 { }
+
+    subsystem S2_early_warning_notification { }
 
     // =============================================================
     // SYSTEM 3 (Team 2C)
     // =============================================================
-    subsystem s3 { }
+
+    subsystem S3_supply_resource_logistics { }
 
     // =============================================================
     // SYSTEM 4 (Team 2A)
     // =============================================================
-    subsystem s4 {
+
+    subsystem S4_personnel_orchestration {
         component Gateway : communication api_gateway { availability = critical recoverability = fast performance = realtime security = internal min_replicas = 2}
         component BrokerIn : communication event_broker { availability = critical recoverability = fast performance = realtime security = public }
         component Controller : logic microservice { availability = high recoverability = fast performance = batch security = restricted }
         component Blackboard : logic domain_service { availability = standard recoverability = normal performance = batch security = restricted }
         component Audit : logic microservice  { availability = standard recoverability = normal performance = batch security = restricted }
-        component Health : logic microservice { availability = standard recoverability = fast performance = batch security = restricted }
         component BrokerOut : communication event_broker { availability = critical recoverability = fast performance = realtime security = public }
         component Audit_Db : data database { availability = standard recoverability = normal performance = batch security = restricted }
         component Recovery_Db : data database { availability = standard recoverability = normal performance = batch security = restricted }
@@ -98,7 +518,6 @@ system_of_systems NERCMS_SoS :
         connector dependency Blackboard -> Recovery_Db 
         connector dependency Audit -> Audit_Db
         connector event_notification BrokerOut -> Audit { style = Pub/Sub protocol = Tcp encrypted = true }
-        connector event_notification BrokerOut -> s5 { style = Pub/Sub protocol = Tcp encrypted = true }
     }
 
     subsystem externalSystems{
@@ -106,29 +525,97 @@ system_of_systems NERCMS_SoS :
         component CivilDefense : external external_agency 
         component Medics : external external_agency 
         component Rescue : external external_agency 
-
-        connector data_stream FireFighters -> s4.Gateway { style = RequestResponse protocol = Http encrypted = true }
-        connector data_stream CivilDefense -> s4.Gateway { style = RequestResponse protocol = Http encrypted = true }
-
-        connector data_stream Medics -> s4.Gateway { style = RequestResponse protocol = Http encrypted = true }
-        connector data_stream Rescue -> s4.Gateway { style = RequestResponse protocol = Http encrypted = true }
-        
-        connector event_notification s4.BrokerOut -> FireFighters { style = Pub/Sub protocol = Tcp encrypted = true }
-        connector event_notification s4.BrokerOut -> CivilDefense { style = Pub/Sub protocol = Tcp encrypted = true }
-        connector event_notification s4.BrokerOut -> Medics { style = Pub/Sub protocol = Tcp encrypted = true }
-        connector event_notification s4.BrokerOut -> Rescue { style = Pub/Sub protocol = Tcp encrypted = true }
     }
-
-    connector event_notification s2 -> s4.BrokerIn {style = MessageQueue protocol = Tcp encrypted = true }
-    connector event_notification s5 -> s4.BrokerIn { style = MessageQueue protocol = Tcp encrypted = true }
-    connector event_notification s3 -> s4.BrokerIn { style = MessageQueue protocol = Tcp encrypted = true }
 
     // =============================================================
     // SYSTEM 5 (Team 2D)
     // =============================================================
-    subsystem s5 { }
 
-    // -------------------------------------------------------------
+    subsystem S5_central_command_core { }
+
+    // =============================================================
     // CONECTORES GLOBAL SOS
-    // (Opcionales si ya se definen dentro de cada subsistema)
-    // -------------------------------------------------------------
+    // =============================================================
+    
+    // ----------------------------------------------------------
+    // Conectores desde/hacia S1_data_acquisition_edge
+    // ----------------------------------------------------------
+
+    // Ruta Rápida: Desde el Borde (Publisher) a otros sistemas
+    connector event_notification S1_data_acquisition_edge.publisher -> S2_early_warning_notification { 
+        style = Pub/Sub 
+        protocol = AMQP
+        timeout_ms = 500
+        encrypted = true
+    }
+
+    connector event_notification S1_data_acquisition_edge.publisher -> S5_central_command_core { 
+        style = Pub/Sub 
+        protocol = AMQP 
+        timeout_ms = 500
+        encrypted = true
+    }
+
+    // Ruta Lenta / Auditoría: Desde el Central (Interface) a otros sistemas
+    connector data_stream S1_data_acquisition_edge.interface -> S5_central_command_core { 
+        style = RequestResponse 
+        protocol = REST 
+        encrypted = true
+    }
+
+    connector data_stream S5_central_command_core -> S1_data_acquisition_edge.interface { 
+        style = RequestResponse 
+        protocol = REST 
+        encrypted = true
+    }
+
+    connector data_stream S2_early_warning_notification -> S1_data_acquisition_edge.interface { 
+        style = RequestResponse 
+        protocol = REST 
+        encrypted = true
+    }
+
+    // ----------------------------------------------------------
+    // Conectores desde/hacia S4_personnel_orchestration
+    // ----------------------------------------------------------
+
+    connector event_notification S2_early_warning_notification -> S4_personnel_orchestration.BrokerIn {
+        style = MessageQueue 
+        protocol = Tcp 
+        encrypted = true 
+    }
+
+    connector event_notification S5_central_command_core -> S4_personnel_orchestration.BrokerIn {
+        style = MessageQueue 
+        protocol = Tcp 
+        encrypted = true 
+    }
+
+    connector event_notification S4_personnel_orchestration.BrokerOut -> S5_central_command_core { 
+        style = Pub/Sub 
+        protocol = Tcp 
+        encrypted = true 
+    }
+
+    connector event_notification S3_supply_resource_logistics -> S4_personnel_orchestration.BrokerIn { 
+        style = MessageQueue 
+        protocol = Tcp 
+        encrypted = true 
+    }
+
+    connector data_stream externalSystems -> S4_personnel_orchestration.Gateway { 
+        style = RequestResponse 
+        protocol = Http 
+        encrypted = true 
+    }
+         
+    connector event_notification S4_personnel_orchestration.BrokerOut -> externalSystems { 
+        style = Pub/Sub 
+        protocol = Tcp 
+        encrypted = true 
+    }
+        
+
+    // ----------------------------------------------------------
+    // Conectores desde/hacia S5_central_command_core
+    // ----------------------------------------------------------

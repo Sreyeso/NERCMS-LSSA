@@ -1,53 +1,45 @@
-subsystem data_acquisition_edge {
-
-    // ----------------------------------------------------------
-    // Componentes del sistema
-    // ----------------------------------------------------------
+subsystem S1_data_acquisition_edge {
 
     // ==========================================
-    // Nivel de Sensado 
+    // Nivel de Sensado (sensing)
     // ==========================================
 
-    component hydrological_sensor : physical sensor {
+    component hydrological_sensor : sensing physical sensor {
         availability = critical
         performance = realtime
         auth = password
         security = restricted
-        tech = "LoRaWAN/MQTT"
     }
 
-    component seismic_sensor : physical sensor {
+    component seismic_sensor : sensing physical sensor {
         availability = critical
         performance = realtime
         auth = password
         security = restricted 
-        tech = "LoRaWAN/MQTT"
     }
 
-    component atmospheric_sensor : physical sensor {
+    component atmospheric_sensor : sensing physical sensor {
         availability = critical
         performance = realtime
         auth = password
         security = restricted
-        tech = "LoRaWAN/MQTT"
     }
 
-    component camera : physical sensor {
+    component camera : sensing physical sensor {
         availability = high
         performance = realtime 
         auth = password
         security = restricted
-        tech = "RTSP"
         port = 6554
     }
 
     // ==========================================
-    // Nivel de Nodos Borde
+    // Nivel de Nodos Borde (edge)
     // ==========================================
     
     // -------- Logic --------
 
-    component data_ingestion_ms : logic microservice {
+    component data_ingestion_ms : edge logic microservice {
         availability = critical
         recoverability = fast
         performance = realtime
@@ -58,7 +50,7 @@ subsystem data_acquisition_edge {
         port = 6001
     }
 
-    component notification_mb : logic event_broker {
+    component notification_mb : edge logic event_broker {
         availability = critical
         recoverability = fast
         performance = realtime
@@ -70,7 +62,7 @@ subsystem data_acquisition_edge {
         port = 6672
     }
 
-    component data_standardization_ms : logic microservice {
+    component data_standardization_ms : edge logic microservice {
         availability = high
         recoverability = fast
         performance = interactive
@@ -81,7 +73,7 @@ subsystem data_acquisition_edge {
         port = 6002
     }
 
-    component reporting_ms : logic microservice {
+    component reporting_ms : edge logic microservice {
         availability = high
         recoverability = normal
         performance = interactive
@@ -92,7 +84,7 @@ subsystem data_acquisition_edge {
         port = 6003
     }
 
-    component logging_mb : logic event_broker {
+    component logging_mb : edge logic event_broker {
         availability = high
         recoverability = fast
         performance = realtime
@@ -104,7 +96,7 @@ subsystem data_acquisition_edge {
         port = 6673
     }
 
-    component logging_ms : logic microservice {
+    component logging_ms : edge logic microservice {
         availability = high
         recoverability = fast
         performance = interactive
@@ -117,7 +109,7 @@ subsystem data_acquisition_edge {
     
     // -------- Data --------
 
-    component raw_data_db : data database {
+    component raw_data_db : edge data database {
         availability = high
         recoverability = fast
         performance = interactive
@@ -129,7 +121,7 @@ subsystem data_acquisition_edge {
         port = 6432
     }
 
-    component raw_files : data bucket {
+    component raw_files : edge data bucket {
         availability = high
         recoverability = fast
         performance = interactive
@@ -141,7 +133,7 @@ subsystem data_acquisition_edge {
         port = 6900
     }
 
-    component processed_data_db : data database {
+    component processed_data_db : edge data database {
         availability = high
         recoverability = fast
         performance = interactive
@@ -153,7 +145,7 @@ subsystem data_acquisition_edge {
         port = 6433
     }
 
-    component processed_files : data bucket {
+    component processed_files : edge data bucket {
         availability = high
         recoverability = fast
         performance = interactive
@@ -165,7 +157,7 @@ subsystem data_acquisition_edge {
         port = 6901
     } 
 
-    component logging_db : data database {
+    component logging_db : edge data database {
         availability = high
         recoverability = fast
         performance = interactive
@@ -179,7 +171,7 @@ subsystem data_acquisition_edge {
 
     // -------- Communication --------
 
-    component publisher : communication microservice {
+    component publisher : edge communication microservice {
         availability = high
         recoverability = fast
         performance = interactive
@@ -190,7 +182,7 @@ subsystem data_acquisition_edge {
         port = 6080
     }
 
-    component edge_ag : communication api_gateway {
+    component edge_ag : edge communication api_gateway {
         availability = high
         recoverability = fast
         performance = interactive
@@ -202,12 +194,12 @@ subsystem data_acquisition_edge {
     }
 
     // ==========================================
-    // Nivel de Nodo Central
+    // Nivel de Nodo Central (central)
     // ==========================================
 
     // -------- Presentation --------
 
-    component operator_frontend : presentation web_ui {
+    component operator_frontend : central presentation web_ui {
         availability = standard
         recoverability = normal
         performance = interactive
@@ -220,7 +212,7 @@ subsystem data_acquisition_edge {
 
     // -------- Communication --------
 
-    component node_ag : communication api_gateway {
+    component node_ag : central communication api_gateway {
         availability = high
         recoverability = fast
         performance = interactive
@@ -231,7 +223,7 @@ subsystem data_acquisition_edge {
         port = 6090
     }
 
-    component interface : communication interface {
+    component interface : central communication interface {
         availability = high
         recoverability = normal
         performance = interactive
@@ -244,7 +236,7 @@ subsystem data_acquisition_edge {
 
     // -------- Logic --------
 
-    component topology_ms : logic microservice {
+    component topology_ms : central logic microservice {
         availability = high
         recoverability = normal
         performance = interactive
@@ -255,7 +247,7 @@ subsystem data_acquisition_edge {
         port = 6005
     }
 
-    component reporting_center_ms : logic microservice {
+    component reporting_center_ms : central logic microservice {
         availability = high
         recoverability = normal
         performance = interactive
@@ -266,7 +258,7 @@ subsystem data_acquisition_edge {
         port = 6006
     }
 
-    component auth_ms : logic microservice {
+    component auth_ms : central logic microservice {
         availability = critical
         recoverability = fast
         performance = interactive
@@ -279,7 +271,7 @@ subsystem data_acquisition_edge {
 
     // -------- Data --------
 
-    component topology_status_db : data database {
+    component topology_status_db : central data database {
         availability = high
         recoverability = normal 
         performance = interactive
@@ -291,7 +283,7 @@ subsystem data_acquisition_edge {
         port = 6435
     }
 
-    component reporting_db : data database {
+    component reporting_db : central data database {
         availability = high
         recoverability = normal 
         performance = interactive
@@ -303,7 +295,7 @@ subsystem data_acquisition_edge {
         port = 6436
     }
 
-    component auth_db : data database {
+    component auth_db : central data database {
         availability = high
         recoverability = normal 
         performance = interactive
@@ -316,12 +308,8 @@ subsystem data_acquisition_edge {
     }  
 
     // ----------------------------------------------------------
-    // Conectores del sistema
-    // ----------------------------------------------------------
-
-    // ==========================================
     // Conectores [Sensado -> Borde]
-    // ==========================================
+    // ----------------------------------------------------------
 
     connector event_notification hydrological_sensor -> data_ingestion_ms { 
         style = Pub/Sub
@@ -342,13 +330,13 @@ subsystem data_acquisition_edge {
     }
 
     connector data_stream camera -> data_ingestion_ms { 
-        protocol = RTCP 
+        protocol = RTSP 
         encrypted = true
     }
 
-    // ==========================================
+    // ----------------------------------------------------------
     // Conectores [Internos Nodo Borde]
-    // ==========================================
+    // ----------------------------------------------------------
 
     // ------- ingestion -> notification_mb -> standardization -------
     
@@ -434,9 +422,9 @@ subsystem data_acquisition_edge {
         encrypted = false
     }
 
-    // ==========================================
+    // ----------------------------------------------------------
     // Conectores [Nodo Borde -> Nodo Central]
-    // ==========================================
+    // ----------------------------------------------------------
     
     connector data_stream interface -> edge_ag { 
         style = RequestResponse 
@@ -444,9 +432,9 @@ subsystem data_acquisition_edge {
         encrypted = true
     }
 
-    // ==========================================
+    // ----------------------------------------------------------
     // Conectores [Internos Nodo Central]
-    // ==========================================
+    // ----------------------------------------------------------
     
     // ------- Frontend → API Gateway -------
     connector data_stream operator_frontend -> node_ag { 
@@ -488,41 +476,4 @@ subsystem data_acquisition_edge {
     connector dependency reporting_center_ms -> reporting_db { protocol = Tcp }
     connector dependency auth_ms -> auth_db { protocol = Tcp }
 
-}
-
-// Ruta Rápida: Desde el Borde (Publisher) a otros sistemas
-connector event_notification data_acquisition_edge.publisher -> s2 { 
-    style = Pub/Sub 
-    protocol = AMQP
-    timeout_ms = 500
-    encrypted = true
-}
-
-//connector event_notification data_acquisition_edge.publisher -> central_command_core.S1_Message_Queue
-connector event_notification data_acquisition_edge.publisher -> s5 { 
-    style = Pub/Sub 
-    protocol = AMQP 
-    timeout_ms = 500
-    encrypted = true
-}
-
-// Ruta Lenta / Auditoría: Desde el Central (Interface) a otros sistemas
-//connector data_stream data_acquisition_edge.interface -> central_command_core.Rec_Sensores  
-connector data_stream data_acquisition_edge.interface -> s5 { 
-    style = RequestResponse 
-    protocol = REST 
-    encrypted = true
-}
-
-//connector data_stream central_command_core.Emisor_Sensores -> data_acquisition_edge.interface 
-connector data_stream s5 -> data_acquisition_edge.interface { 
-    style = RequestResponse 
-    protocol = REST 
-    encrypted = true
-}
-
-connector data_stream s2 -> data_acquisition_edge.interface { 
-    style = RequestResponse 
-    protocol = REST 
-    encrypted = true
 }
