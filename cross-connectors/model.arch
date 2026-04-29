@@ -108,3 +108,19 @@ connector event_notification S4_personnel_orchestration.BrokerOut -> externalSys
     timeout_ms=2000  encrypted=true  rate_limit=100
   }
 
+  // S2 Health Check: Heartbeat_Monitor polls S5 availability
+  connector data_stream S2_early_warning_notification.Heartbeat_Monitor -> S5_central_command_core {
+    style = RequestResponse
+    protocol = REST
+    timeout_ms = 500
+    encrypted = true
+  }
+
+  // S2 → S5: Approval requests (Normal mode: S5 coordinates)
+  connector data_stream S2_early_warning_notification.Rules_Evaluator -> S5_central_command_core {
+    style = RequestResponse
+    protocol = REST
+    timeout_ms = 120000  // Abort window (can be 120s in Normal, 60s in Degraded)
+    encrypted = true
+  }
+
