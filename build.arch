@@ -604,53 +604,18 @@ system_of_systems NERCMS_SoS :
         encrypted = true 
     }
 
-    connector data_stream externalSystems.FireFighters -> S4_personnel_orchestration.Gateway { 
-        style = RequestResponse 
-        protocol = Http 
-        encrypted = true 
-    }
-
-    connector data_stream externalSystems.CivilDefense -> S4_personnel_orchestration.Gateway { 
-        style = RequestResponse 
-        protocol = Http 
-        encrypted = true 
-    }
-
-    connector data_stream externalSystems.Medics -> S4_personnel_orchestration.Gateway { 
-        style = RequestResponse 
-        protocol = Http 
-        encrypted = true 
-    }
-
-    connector data_stream externalSystems.Rescue -> S4_personnel_orchestration.Gateway { 
+    connector data_stream externalSystems -> S4_personnel_orchestration.Gateway { 
         style = RequestResponse 
         protocol = Http 
         encrypted = true 
     }
          
-    connector event_notification S4_personnel_orchestration.BrokerOut -> externalSystems.FireFighters { 
+    connector event_notification S4_personnel_orchestration.BrokerOut -> externalSystems { 
         style = Pub/Sub 
         protocol = Tcp 
         encrypted = true 
     }
         
-    connector event_notification S4_personnel_orchestration.BrokerOut -> externalSystems.CivilDefense { 
-        style = Pub/Sub 
-        protocol = Tcp 
-        encrypted = true 
-    }
-        
-    connector event_notification S4_personnel_orchestration.BrokerOut -> externalSystems.Medics { 
-        style = Pub/Sub 
-        protocol = Tcp 
-        encrypted = true 
-    }
-        
-    connector event_notification S4_personnel_orchestration.BrokerOut -> externalSystems.Rescue { 
-        style = Pub/Sub 
-        protocol = Tcp 
-        encrypted = true 
-    }
 
     // ----------------------------------------------------------
     // Conectores desde/hacia S5_central_command_core

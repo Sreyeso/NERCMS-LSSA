@@ -21,12 +21,6 @@ graph LR
     S4_personnel_orchestration -- "event_notification (Tcp)" --> S5_central_command_core
     S3_supply_resource_logistics -- "event_notification (Tcp)" --> S4_personnel_orchestration
     externalSystems -- "data_stream (Http)" --> S4_personnel_orchestration
-    externalSystems -- "data_stream (Http)" --> S4_personnel_orchestration
-    externalSystems -- "data_stream (Http)" --> S4_personnel_orchestration
-    externalSystems -- "data_stream (Http)" --> S4_personnel_orchestration
-    S4_personnel_orchestration -- "event_notification (Tcp)" --> externalSystems
-    S4_personnel_orchestration -- "event_notification (Tcp)" --> externalSystems
-    S4_personnel_orchestration -- "event_notification (Tcp)" --> externalSystems
     S4_personnel_orchestration -- "event_notification (Tcp)" --> externalSystems
 ```
 

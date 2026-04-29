@@ -69,42 +69,6 @@ system_of_systems NERCMS_SoS_Global :
         encrypted=true
     }
 
-    connector data_stream externalSystems -> S4_personnel_orchestration {
-        style=RequestResponse
-        protocol=Http
-        encrypted=true
-    }
-
-    connector data_stream externalSystems -> S4_personnel_orchestration {
-        style=RequestResponse
-        protocol=Http
-        encrypted=true
-    }
-
-    connector data_stream externalSystems -> S4_personnel_orchestration {
-        style=RequestResponse
-        protocol=Http
-        encrypted=true
-    }
-
-    connector event_notification S4_personnel_orchestration -> externalSystems {
-        style=Pub/Sub
-        protocol=Tcp
-        encrypted=true
-    }
-
-    connector event_notification S4_personnel_orchestration -> externalSystems {
-        style=Pub/Sub
-        protocol=Tcp
-        encrypted=true
-    }
-
-    connector event_notification S4_personnel_orchestration -> externalSystems {
-        style=Pub/Sub
-        protocol=Tcp
-        encrypted=true
-    }
-
     connector event_notification S4_personnel_orchestration -> externalSystems {
         style=Pub/Sub
         protocol=Tcp
