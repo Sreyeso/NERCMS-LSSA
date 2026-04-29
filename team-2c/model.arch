@@ -1,1 +1,41 @@
-subsystem S3_supply_resource_logistics { }
+subsystem S3_supply_resource_logistics {
+    // Comunicacion
+    component api-gateway: communication api_gateway { availability = critical recoverability = fast performance = realtime auth = token security = public}
+
+    component fifo-queue: communication event_broker { availability = high recoverability = fast performance = realtime security = internal }
+    
+    // Microservicios
+    component sync-ms: logic microservice { availability = high recoverability = fast performance = interactive security = restricted max_replicas = 3}
+
+    component allocation-ms: logic microservice { availability = high recoverability = fast performance = interactive security = restricted min_replicas = 2 }
+
+    component stock-ms: logic microservice { availability = critical recoverability = fast performance = interactive security = restricted min_replicas = 3 }
+
+    component concurrence-ms: logic microservice { availability = critical recoverability = fast performance = interactive security = restricted min_replicas = 3 }
+    
+    // DBs
+    component allocation-db: data database { availability = high recoverability = normal performance = interactive security = restricted }
+
+    component stock-db: data database { availability = critical recoverability = fast performance = interactive security = restricted }
+
+    component distributed-nodes: physical edge_node { availability = critical recoverability = fast performance = realtime security = restricted min_replicas = 3 }
+
+    // Conectores
+    // api -> logic
+    connector data_stream api-gateway-> sync-ms { style = RequestResponse protocol = REST encrypted = true }
+    connector data_stream api-gateway-> allocation-ms { style = RequestResponse protocol = REST encrypted = true }
+    connector data_stream api-gateway-> stock-ms { style = RequestResponse protocol = REST encrypted = true }
+    connector data_stream api-gateway-> concurrence-ms{ style = RequestResponse protocol = REST encrypted = true }
+    
+    // logic -> data
+    connector dependency allocation-ms -> allocation-db{ style = RequestResponse protocol = Tcp encrypted = true }
+    connector dependency stock-ms-> stock-db{ style = RequestResponse protocol = Tcp encrypted = true }
+    
+    // api -> queue -> logic
+    connector data_stream api-gateway -> fifo-queue { style = MessageQueue protocol = AMQP encrypted = true timeout_ms = 3000 }
+    connector event_notification fifo-queue -> stock-ms { style = MessageQueue protocol = AMQP encrypted = true timeout_ms = 3000 }
+    connector event_notification fifo-queue -> allocation-ms { style = MessageQueue protocol = AMQP encrypted = true timeout_ms = 3000 }
+    
+    // logic -> physical
+    connector control_command distributed-nodes -> concurrence-ms { style = RequestResponse protocol = gRPC encrypted = true }
+}
