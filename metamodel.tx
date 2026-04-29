@@ -39,6 +39,7 @@ ComponentType:
     'web_ui'          | 
     'interface'       | 
     'mobile_app'      | 
+    'load_balancer'   | 
     'api_gateway'     | 
     'microservice'    | 
     'domain_service'  | 
