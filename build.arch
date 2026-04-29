@@ -1073,18 +1073,10 @@ system_of_systems NERCMS_SoS :
         encrypted = true
     }
 
-    // S2 → S4: Via S5 in Normal mode (S5 decides coordination)
+    // S5 coordinates S4 (in normal mode)
     connector event_notification S5_central_command_core -> S4_personnel_orchestration.BrokerIn {
         style = MessageQueue
         protocol = Tcp
-        encrypted = true
-    }
-
-    // S2 → S4: Direct (Degraded/Autonomous mode: sys2.direct.personnel topic)
-    connector event_notification S2_early_warning_notification.Broker_Out -> S4_personnel_orchestration.BrokerIn {
-        style = Pub/Sub
-        protocol = AMQP
-        timeout_ms = 1000
         encrypted = true
     }
 
@@ -1094,19 +1086,15 @@ system_of_systems NERCMS_SoS :
         encrypted = true
     }
 
+    // S3 and S4 receive operative orders from S5 (normal mode)
     connector event_notification S3_supply_resource_logistics -> S4_personnel_orchestration.BrokerIn {
         style = MessageQueue
         protocol = Tcp
         encrypted = true
     }
 
-    // S2 → S3: Direct (Degraded/Autonomous mode: sys2.direct.logistics topic)
-    connector event_notification S2_early_warning_notification.Broker_Out -> S3_supply_resource_logistics {
-        style = Pub/Sub
-        protocol = AMQP
-        timeout_ms = 1000
-        encrypted = true
-    }
+    // NOTE: S3 and S4 independently subscribe to S2's alerts when S5 is down.
+    // This is S3/S4 responsibility, not S2's. S2 just publishes to the broker.
 
     connector data_stream externalSystems -> S4_personnel_orchestration.Gateway { 
         style = RequestResponse 
