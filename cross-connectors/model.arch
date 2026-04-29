@@ -81,3 +81,30 @@ connector event_notification S4_personnel_orchestration.BrokerOut -> externalSys
 // Conectores desde/hacia S5_central_command_core
 // ----------------------------------------------------------
 
+
+// To system 2 (alertas → crítico, cifrado obligatorio) Falta confirmar estos
+  connector control_command S5_central_command_core.Emisor_Alertas -> S2_early_warning_notification {
+    style=RequestResponse  protocol=gRPC
+    timeout_ms=200  encrypted=true  rate_limit=500
+  }
+  // From system 2
+  connector event_notification S2_early_warning_notification -> S5_central_command_core.Rec_Alertas {
+    style=MessageQueue  protocol=AMQP
+    timeout_ms=300  encrypted=true  rate_limit=500
+  }
+
+  // To system 3 (logística)
+  connector data_stream S5_central_command_core.Emisor_Logistica -> S3_supply_resource_logistics {
+    style=MessageQueue  protocol=AMQP
+    timeout_ms=1000  encrypted=true  rate_limit=200
+  }
+  // From system 3
+  connector data_stream S3_supply_resource_logistics -> S5_central_command_core.Rec_Logistica {
+    style=MessageQueue  protocol=AMQP
+    timeout_ms=1000  encrypted=true  rate_limit=200
+  }
+  connector event_notification S3_supply_resource_logistics -> S5_central_command_core.S3_Message_Queue {
+    style=Pub/Sub  protocol=MQTT
+    timeout_ms=2000  encrypted=true  rate_limit=100
+  }
+
