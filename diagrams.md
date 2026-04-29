@@ -144,22 +144,20 @@ graph LR
 ```mermaid
 graph LR
     subgraph S4_personnel_orchestration
-        subgraph S4_personnel_orchestration_undefined[undefined]
-            subgraph S4_personnel_orchestration_undefined_communication[communication]
-                Gateway["Gateway<br/>[undefined/communication]<br/>(api_gateway)"]
-                BrokerIn["BrokerIn<br/>[undefined/communication]<br/>(event_broker)"]
-                BrokerOut["BrokerOut<br/>[undefined/communication]<br/>(event_broker)"]
-            end
-            subgraph S4_personnel_orchestration_undefined_logic[logic]
-                Controller["Controller<br/>[undefined/logic]<br/>(microservice)"]
-                Blackboard["Blackboard<br/>[undefined/logic]<br/>(domain_service)"]
-                Audit["Audit<br/>[undefined/logic]<br/>(microservice)"]
-                Health["Health<br/>[undefined/logic]<br/>(microservice)"]
-            end
-            subgraph S4_personnel_orchestration_undefined_data[data]
-                Audit_Db["Audit_Db<br/>[undefined/data]<br/>(database)"]
-                Recovery_Db["Recovery_Db<br/>[undefined/data]<br/>(database)"]
-            end
+        subgraph S4_personnel_orchestration_undefined_communication[communication]
+            Gateway["Gateway<br/>[undefined/communication]<br/>(api_gateway)"]
+            BrokerIn["BrokerIn<br/>[undefined/communication]<br/>(event_broker)"]
+            BrokerOut["BrokerOut<br/>[undefined/communication]<br/>(event_broker)"]
+        end
+        subgraph S4_personnel_orchestration_undefined_logic[logic]
+            Controller["Controller<br/>[undefined/logic]<br/>(microservice)"]
+            Blackboard["Blackboard<br/>[undefined/logic]<br/>(domain_service)"]
+            Audit["Audit<br/>[undefined/logic]<br/>(microservice)"]
+            Health["Health<br/>[undefined/logic]<br/>(microservice)"]
+        end
+        subgraph S4_personnel_orchestration_undefined_data[data]
+            Audit_Db["Audit_Db<br/>[undefined/data]<br/>(database)"]
+            Recovery_Db["Recovery_Db<br/>[undefined/data]<br/>(database)"]
         end
 
     Gateway -- "data_stream (AMQP)" --> BrokerIn
@@ -178,8 +176,6 @@ graph LR
 ```mermaid
 graph LR
     subgraph externalSystems
-        subgraph externalSystems_undefined[undefined]
-        end
 
     end
 ```

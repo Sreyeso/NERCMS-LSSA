@@ -88,8 +88,13 @@ def generate_diagrams():
             if node not in nodes:
                 continue
 
-            node_id = f"{sub_id}_{node}"
-            lines.append(f"        subgraph {node_id}[{node}]")
+            is_grouped = node != "undefined"
+            tier_indent = "            " if is_grouped else "        "
+            node_indent = "        " if is_grouped else "        "
+
+            if is_grouped:
+                node_id = f"{sub_id}_{node}"
+                lines.append(f"        subgraph {node_id}[{node}]")
 
             tiers = {}
             for comp in nodes[node]:
@@ -100,15 +105,16 @@ def generate_diagrams():
                     continue
 
                 tier_id = f"{sub_id}_{node}_{tier}"
-                lines.append(f"            subgraph {tier_id}[{tier}]")
+                lines.append(f"{tier_indent}subgraph {tier_id}[{tier}]")
 
                 for comp in tiers[tier]:
                     cid = safe_id(comp.name)
                     label = f"{comp.name}<br/>[{node}/{comp.tier}]<br/>({comp.type})"
-                    lines.append(f"                {cid}[\"{label}\"]")
-                lines.append("            end")
+                    lines.append(f"{tier_indent}    {cid}[\"{label}\"]")
+                lines.append(f"{tier_indent}end")
 
-            lines.append("        end")
+            if node != "undefined":
+                lines.append(f"{node_indent}end")
 
         lines.append("")
 
