@@ -183,7 +183,7 @@ subsystem S5_central_command_core {
         availability=high       
         recoverability=fast
         performance=realtime 
-        security=internal
+        security=restricted
         mem_limit="50Mi"  
         cpu_limit=0.1
         port=8100

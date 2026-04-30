@@ -495,8 +495,8 @@ system_of_systems NERCMS_SoS :
             availability=critical   
             recoverability=fast
             performance=realtime    
-            auth=password
-            security=internal       
+            auth=token
+            security=restricted       
             min_replicas=2  
             max_replicas=4
             tech="AMQP"  port=7001
@@ -1198,7 +1198,7 @@ system_of_systems NERCMS_SoS :
             availability=high       
             recoverability=fast
             performance=realtime 
-            security=internal
+            security=restricted
             mem_limit="50Mi"  
             cpu_limit=0.1
             port=8100
@@ -1349,7 +1349,7 @@ system_of_systems NERCMS_SoS :
         encrypted = true
     }
 
-    connector data_stream S2_early_warning_notification -> S1_data_acquisition_edge.interface { 
+    connector data_stream S2_early_warning_notification.Rules_Evaluator -> S1_data_acquisition_edge.interface { 
         style = RequestResponse 
         protocol = REST 
         encrypted = true
@@ -1377,9 +1377,11 @@ system_of_systems NERCMS_SoS :
         encrypted = true 
     }
 
-    connector event_notification S3_supply_resource_logistics -> S4_personnel_orchestration.BrokerIn { 
-        style = MessageQueue 
-        protocol = Tcp 
+    // S3 -> S4 : Confirmaciones asignación + estado entregas (eventos)
+    connector event_notification S3_supply_resource_logistics.allocation_ms -> S4_personnel_orchestration.BrokerIn { 
+        style = Pub/Sub 
+        protocol = MQTT 
+        timeout_ms = 15000
         encrypted = true 
     }
 
@@ -1459,7 +1461,7 @@ system_of_systems NERCMS_SoS :
     }
 
     // S2 → S3 fallback (Autonomous mode): mutually authenticated direct channel
-    connector control_command S2_early_warning_notification.Emisor_Logistica -> S3_supply_resource_logistics {
+    connector control_command S2_early_warning_notification.Emisor_Logistica -> S3_supply_resource_logistics.api_gateway {
         style = RequestResponse
         protocol = gRPC
         timeout_ms = 500
