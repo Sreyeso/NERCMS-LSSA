@@ -62,8 +62,8 @@ connector event_notification S4_personnel_orchestration.BrokerOut -> S5_central_
 connector event_notification S3_supply_resource_logistics.allocationMs -> S4_personnel_orchestration { 
     style = Pub/Sub 
     protocol = MQTT 
-    encrypted = true 
     timeout_ms = 15000
+    encrypted = true 
 }
 
 connector data_stream externalSystems -> S4_personnel_orchestration.Gateway { 
