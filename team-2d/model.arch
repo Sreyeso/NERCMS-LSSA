@@ -67,7 +67,7 @@ subsystem S5_central_command_core {
         recoverability=normal
         performance=interactive  
         security=internal
-        min_replicas=2  
+        min_replicas=2   
         mem_limit="512Mi"   
         cpu_limit=0.5   
         tech="react"  
@@ -116,7 +116,7 @@ subsystem S5_central_command_core {
         port=8090
     }
 
-    component Rec_Alertas : communication interface {
+    component Rec_Alertas : communication event_broker {
         availability=critical   
         recoverability=fast
         performance=realtime    
@@ -140,6 +140,22 @@ subsystem S5_central_command_core {
         port=8093
     }
 
+    component Rec_Alertas_Journal : communication interface {
+        availability=critical   
+        recoverability=fast
+        performance=realtime    
+        security=restricted
+        port=8097
+    }
+
+    component Rec_Alertas_Journal_Approval : communication interface {
+        availability=critical   
+        recoverability=fast
+        performance=realtime    
+        security=restricted
+        port=8098
+    }
+
     // ── Communication tier – Message Brokers ──────────────────────
     component S1_Message_Queue : communication event_broker {
         availability=critical   
@@ -155,12 +171,22 @@ subsystem S5_central_command_core {
     component S3_Message_Queue : communication event_broker {
         availability=high       
         recoverability=fast
-        performance=interactive  
+        performance=interactive 
         security=restricted
         min_replicas=1   
         mem_limit="1Gi"  
         cpu_limit=0.5
         port=8096
+    }
+
+    component Health_Probe: communication microservice {
+        availability=high       
+        recoverability=fast
+        performance=realtime 
+        security=internal
+        mem_limit="50Mi"  
+        cpu_limit=0.1
+        port=8100
     }
 
     // ── Internal connectors ───────────────────────────────────────
@@ -179,7 +205,7 @@ subsystem S5_central_command_core {
         protocol=Http  
         timeout_ms=500
     }
-    
+
     connector control_command Motor_Decisiones -> Gen_Comandos {
         style=RequestResponse  
         protocol=gRPC  
@@ -191,19 +217,19 @@ subsystem S5_central_command_core {
         protocol=gRPC  
         timeout_ms=100
     }
-    
+
     connector control_command Gen_Comandos -> Emisor_Alertas {
         style=RequestResponse  
         protocol=gRPC  
         timeout_ms=100
     }
-    
+
     connector control_command Gen_Comandos -> Emisor_Logistica {
         style=RequestResponse  
         protocol=gRPC  
         timeout_ms=150
     }
-    
+
     connector control_command Gen_Comandos -> Emisor_Personal {
         style=RequestResponse  
         protocol=gRPC  
@@ -215,35 +241,59 @@ subsystem S5_central_command_core {
         protocol=AMQP  
         timeout_ms=500
     }
-    
+
     connector event_notification S3_Message_Queue -> Procesador_Central {
         style=MessageQueue  
         protocol=AMQP  
         timeout_ms=500
     }
-    
+
     connector data_stream Rec_Sensores -> Procesador_Central {
         style=RequestResponse  
         protocol=gRPC  
         timeout_ms=100
     }
-    
+
     connector event_notification Rec_Alertas -> Procesador_Central {
         style=MessageQueue  
         protocol=AMQP  
         timeout_ms=300
     }
-    
-    connector data_stream Rec_Logistica -> Procesador_Central {
+
+    connector data_stream Rec_Alertas_Journal -> Procesador_Central {
         style=RequestResponse  
-        protocol=gRPC  
+        protocol=AMQP  
         timeout_ms=300
     }
-    
-    connector data_stream Rec_Personal -> Procesador_Central {
+
+    connector data_stream Rec_Alertas_Journal_Approval -> Procesador_Central {
+        style=RequestResponse  
+        protocol=AMQP  
+        timeout_ms=300
+    }
+
+    connector data_stream Rec_Logistica -> Procesador_Central {
         style=RequestResponse 
         protocol=gRPC  
         timeout_ms=300
     }
-  
+
+    connector data_stream Rec_Personal -> Procesador_Central {
+        style=RequestResponse  
+        protocol=gRPC  
+        timeout_ms=300
+    }
+
+    connector event_notification Health_Probe -> Procesador_Central {
+        style=RequestResponse   
+        protocol=REST   
+        timeout_ms=300
+    }
+
+    connector event_notification  Procesador_Central -> Health_Probe{
+        style=RequestResponse   
+        protocol=REST   
+        timeout_ms=300
+    }
+
 }
