@@ -33,12 +33,6 @@ system_of_systems NERCMS_SoS_Global :
         encrypted=true
     }
 
-    connector data_stream S2_early_warning_notification -> S1_data_acquisition_edge {
-        style=RequestResponse
-        protocol=REST
-        encrypted=true
-    }
-
     connector event_notification S2_early_warning_notification -> S4_personnel_orchestration {
         style=MessageQueue
         protocol=Tcp
@@ -72,5 +66,74 @@ system_of_systems NERCMS_SoS_Global :
     connector event_notification S4_personnel_orchestration -> externalSystems {
         style=Pub/Sub
         protocol=Tcp
+        encrypted=true
+    }
+
+    connector control_command S5_central_command_core -> S2_early_warning_notification {
+        style=RequestResponse
+        protocol=gRPC
+        timeout_ms=200
+        encrypted=true
+        rate_limit=500
+    }
+
+    connector event_notification S2_early_warning_notification -> S5_central_command_core {
+        style=MessageQueue
+        protocol=AMQP
+        timeout_ms=300
+        encrypted=true
+        rate_limit=500
+    }
+
+    connector data_stream S5_central_command_core -> S3_supply_resource_logistics {
+        style=MessageQueue
+        protocol=AMQP
+        timeout_ms=1000
+        encrypted=true
+        rate_limit=200
+    }
+
+    connector data_stream S3_supply_resource_logistics -> S5_central_command_core {
+        style=MessageQueue
+        protocol=AMQP
+        timeout_ms=1000
+        encrypted=true
+        rate_limit=200
+    }
+
+    connector event_notification S3_supply_resource_logistics -> S5_central_command_core {
+        style=Pub/Sub
+        protocol=MQTT
+        timeout_ms=2000
+        encrypted=true
+        rate_limit=100
+    }
+
+    connector data_stream S2_early_warning_notification -> S5_central_command_core {
+        style=RequestResponse
+        protocol=REST
+        timeout_ms=500
+        encrypted=true
+    }
+
+    connector data_stream S2_early_warning_notification -> S5_central_command_core {
+        style=RequestResponse
+        protocol=REST
+        timeout_ms=120000
+        encrypted=true
+    }
+
+    connector control_command S2_early_warning_notification -> S3_supply_resource_logistics {
+        style=RequestResponse
+        protocol=gRPC
+        timeout_ms=500
+        encrypted=true
+        rate_limit=200
+    }
+
+    connector data_stream S2_early_warning_notification -> S5_central_command_core {
+        style=RequestResponse
+        protocol=REST
+        timeout_ms=5000
         encrypted=true
     }
