@@ -108,7 +108,7 @@ connector event_notification S4_personnel_orchestration.BrokerOut -> externalSys
   }
 
   // S2 Health Check: Heartbeat_Monitor polls S5 availability
-  connector data_stream S2_early_warning_notification.Heartbeat_Monitor -> S5_central_command_core {
+  connector data_stream S2_early_warning_notification.Heartbeat_Monitor -> S5_central_command_core.Health_Probe {
     style = RequestResponse
     protocol = REST
     timeout_ms = 500
