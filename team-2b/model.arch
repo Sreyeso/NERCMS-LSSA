@@ -5,8 +5,8 @@ subsystem S2_early_warning_notification {
         availability=critical   
         recoverability=fast
         performance=realtime    
-        auth=password
-        security=internal       
+        auth=token
+        security=restricted       
         min_replicas=2  
         max_replicas=4
         tech="AMQP"  port=7001

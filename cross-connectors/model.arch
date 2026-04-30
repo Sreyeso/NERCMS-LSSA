@@ -30,7 +30,7 @@ connector data_stream S5_central_command_core.Emisor_Sensores -> S1_data_acquisi
     encrypted = true
 }
 
-connector data_stream S2_early_warning_notification -> S1_data_acquisition_edge.interface { 
+connector data_stream S2_early_warning_notification.Rules_Evaluator -> S1_data_acquisition_edge.interface { 
     style = RequestResponse 
     protocol = REST 
     encrypted = true
@@ -142,7 +142,7 @@ connector data_stream S2_early_warning_notification.Rules_Evaluator -> S5_centra
 }
 
 // S2 → S3 fallback (Autonomous mode): mutually authenticated direct channel
-connector control_command S2_early_warning_notification.Emisor_Logistica -> S3_supply_resource_logistics {
+connector control_command S2_early_warning_notification.Emisor_Logistica -> S3_supply_resource_logistics.api_gateway {
     style = RequestResponse
     protocol = gRPC
     timeout_ms = 500
