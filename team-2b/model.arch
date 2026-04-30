@@ -4,7 +4,8 @@ subsystem S2_early_warning_notification {
     component Broker_In : communication event_broker {
       availability=critical   recoverability=fast
       performance=realtime    auth=password
-      security=internal       tech="AMQP"  port=7001
+      security=internal       min_replicas=2  max_replicas=4
+      tech="AMQP"  port=7001
     }
 
     component Rec_Alertas : communication interface {
@@ -20,28 +21,46 @@ subsystem S2_early_warning_notification {
       security=restricted     port=7006
     }
 
+    // Fallback emitter to S3 logistics (autonomous mode, mutually authenticated channel)
+    component Emisor_Logistica : communication interface {
+      availability=critical   recoverability=fast
+      performance=realtime    auth=keypass
+      security=restricted     port=7007
+    }
+
+    // Fallback emitter to S4 personnel (direct channel when S5 is unavailable)
+    component Emisor_Personal : communication interface {
+      availability=high       recoverability=fast
+      performance=realtime    auth=token
+      security=restricted     port=7009
+    }
+
     component SMS_Worker : communication microservice {
       availability=high       recoverability=fast
       performance=interactive auth=token
-      security=internal       port=7011
+      security=internal       min_replicas=2  max_replicas=6
+      port=7011
     }
 
     component Mobile_Worker : communication microservice {
       availability=high       recoverability=fast
       performance=interactive auth=token
-      security=internal       port=7012
+      security=internal       min_replicas=2  max_replicas=6
+      port=7012
     }
 
     component Radio_TV_Worker : communication microservice {
       availability=high       recoverability=normal
       performance=interactive auth=token
-      security=internal       port=7013
+      security=internal       min_replicas=1  max_replicas=4
+      port=7013
     }
 
     component Official_Channels_Worker : communication microservice {
       availability=high       recoverability=normal
       performance=interactive auth=token
-      security=internal       port=7014
+      security=internal       min_replicas=1  max_replicas=4
+      port=7014
     }
 
     component Heartbeat_Monitor : communication microservice {
@@ -54,13 +73,22 @@ subsystem S2_early_warning_notification {
     component Rules_Evaluator : logic microservice {
       availability=critical   recoverability=fast
       performance=realtime    auth=token
-      security=internal       port=7003
+      security=internal       min_replicas=2  max_replicas=10
+      port=7003
     }
 
     component Dispatcher : logic microservice {
       availability=high       recoverability=fast
       performance=realtime    auth=token
-      security=internal       port=7004
+      security=internal       min_replicas=2  max_replicas=8
+      port=7004
+    }
+
+    // Drains autonomous decisions to S5 once it recovers (reconciliation)
+    component Journal_Drainer : logic microservice {
+      availability=high       recoverability=normal
+      performance=batch       auth=token
+      security=internal       port=7008
     }
 
     // ── Data tier ────────────────────────────────────────────────
@@ -70,9 +98,16 @@ subsystem S2_early_warning_notification {
       security=restricted     tech="PostgreSQL"  port=7020
     }
 
+    // Append-only log of autonomous decisions, kept for reconciliation with S5
+    component Decision_Journal : data database {
+      availability=critical   recoverability=fast
+      performance=interactive auth=password
+      security=restricted     tech="PostgreSQL"  port=7021
+    }
+
     // ── Internal connectors ──────────────────────────────────────
     connector data_stream Broker_In -> Rules_Evaluator {
-      style=MessageQueue  protocol=AMQP  encrypted=true
+      style=MessageQueue  protocol=AMQP  encrypted=true  rate_limit=2000
     }
 
     connector dependency Rec_Alertas -> Rules_Evaluator {
@@ -87,7 +122,22 @@ subsystem S2_early_warning_notification {
       style=RequestResponse  protocol=Http  timeout_ms=500  encrypted=true
     }
 
+    // Autonomous-mode decisions are appended to the journal for later reconciliation
+    connector dependency Rules_Evaluator -> Decision_Journal {
+      style=RequestResponse  protocol=Http  timeout_ms=300  encrypted=true
+    }
+
     connector data_stream Rules_Evaluator -> Emisor_Alertas {
+      style=MessageQueue  protocol=AMQP  timeout_ms=300  encrypted=true
+    }
+
+    // Direct fallback path: Rules_Evaluator pushes orders to S3 logistics when S5 is down
+    connector data_stream Rules_Evaluator -> Emisor_Logistica {
+      style=MessageQueue  protocol=AMQP  timeout_ms=300  encrypted=true
+    }
+
+    // Direct fallback path: Rules_Evaluator pushes notifications to S4 personnel when S5 is down
+    connector data_stream Rules_Evaluator -> Emisor_Personal {
       style=MessageQueue  protocol=AMQP  timeout_ms=300  encrypted=true
     }
 
@@ -109,5 +159,10 @@ subsystem S2_early_warning_notification {
 
     connector dependency Heartbeat_Monitor -> Rules_Evaluator {
       style=RequestResponse  protocol=Http  timeout_ms=100  encrypted=true
+    }
+
+    // Drainer reads pending decisions from the journal to ship them to S5 on recovery
+    connector dependency Journal_Drainer -> Decision_Journal {
+      style=RequestResponse  protocol=Http  timeout_ms=500  encrypted=true
     }
 }

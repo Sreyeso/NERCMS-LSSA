@@ -30,20 +30,14 @@ connector data_stream S5_central_command_core.Emisor_Sensores -> S1_data_acquisi
     encrypted = true
 }
 
-connector data_stream S2_early_warning_notification -> S1_data_acquisition_edge.interface { 
-    style = RequestResponse 
-    protocol = REST 
-    encrypted = true
-}
-
 // ----------------------------------------------------------
 // Conectores desde/hacia S4_personnel_orchestration
 // ----------------------------------------------------------
 
-connector event_notification S2_early_warning_notification -> S4_personnel_orchestration.BrokerIn {
-    style = MessageQueue 
-    protocol = Tcp 
-    encrypted = true 
+connector event_notification S2_early_warning_notification.Emisor_Personal -> S4_personnel_orchestration.BrokerIn {
+    style = MessageQueue
+    protocol = Tcp
+    encrypted = true
 }
 
 connector event_notification S5_central_command_core.Emisor_Personal -> S4_personnel_orchestration.BrokerIn {
@@ -121,6 +115,23 @@ connector event_notification S4_personnel_orchestration.BrokerOut -> externalSys
     style = RequestResponse
     protocol = REST
     timeout_ms = 120000  // Abort window (can be 120s in Normal, 60s in Degraded)
+    encrypted = true
+  }
+
+  // S2 → S3 fallback (Autonomous mode): mutually authenticated direct channel
+  connector control_command S2_early_warning_notification.Emisor_Logistica -> S3_supply_resource_logistics {
+    style = RequestResponse
+    protocol = gRPC
+    timeout_ms = 500
+    encrypted = true
+    rate_limit = 200
+  }
+
+  // S2 → S5 reconciliation: Journal_Drainer ships autonomous decisions on recovery
+  connector data_stream S2_early_warning_notification.Journal_Drainer -> S5_central_command_core {
+    style = RequestResponse
+    protocol = REST
+    timeout_ms = 5000
     encrypted = true
   }
 
