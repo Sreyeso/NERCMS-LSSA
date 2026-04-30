@@ -58,10 +58,12 @@ connector event_notification S4_personnel_orchestration.BrokerOut -> S5_central_
     encrypted = true 
 }
 
-connector event_notification S3_supply_resource_logistics -> S4_personnel_orchestration.BrokerIn { 
-    style = MessageQueue 
-    protocol = Tcp 
+// S3 -> S4 : Confirmaciones asignación + estado entregas (eventos)
+connector event_notification S3_supply_resource_logistics.allocationMs -> S4_personnel_orchestration { 
+    style = Pub/Sub 
+    protocol = MQTT 
     encrypted = true 
+    timeout_ms = 15000
 }
 
 connector data_stream externalSystems -> S4_personnel_orchestration.Gateway { 
