@@ -4,32 +4,28 @@
 
 ```mermaid
 graph LR
-    S1_data_acquisition_edge[[S1_data_acquisition_edge]]
-    S2_early_warning_notification[[S2_early_warning_notification]]
-    S3_supply_resource_logistics[[S3_supply_resource_logistics]]
-    S4_personnel_orchestration[[S4_personnel_orchestration]]
-    externalSystems[[externalSystems]]
-    S5_central_command_core[[S5_central_command_core]]
+    S1_data_acquisition_edge[S1_data_acquisition_edge]
+    S2_early_warning_notification[S2_early_warning_notification]
+    S3_supply_resource_logistics[S3_supply_resource_logistics]
+    S4_personnel_orchestration[S4_personnel_orchestration]
+    externalSystems[externalSystems]
+    S5_central_command_core[S5_central_command_core]
 
     S1_data_acquisition_edge -- "event_notification (AMQP)" --> S2_early_warning_notification
+    S1_data_acquisition_edge -- "data_stream (REST)" <--> S5_central_command_core
     S1_data_acquisition_edge -- "event_notification (AMQP)" --> S5_central_command_core
-    S1_data_acquisition_edge -- "data_stream (REST)" --> S5_central_command_core
-    S5_central_command_core -- "data_stream (REST)" --> S1_data_acquisition_edge
+    S2_early_warning_notification -- "data_stream (REST)" --> S1_data_acquisition_edge
+    S2_early_warning_notification -- "control_command (gRPC)" --> S3_supply_resource_logistics
     S2_early_warning_notification -- "event_notification (Tcp)" --> S4_personnel_orchestration
-    S5_central_command_core -- "event_notification (Tcp)" --> S4_personnel_orchestration
-    S4_personnel_orchestration -- "event_notification (Tcp)" --> S5_central_command_core
+    S2_early_warning_notification -- "3x data_stream (REST)" --> S5_central_command_core
+    S2_early_warning_notification -- "event_notification (AMQP)" --> S5_central_command_core
     S3_supply_resource_logistics -- "event_notification (Tcp)" --> S4_personnel_orchestration
-    externalSystems -- "data_stream (Http)" --> S4_personnel_orchestration
+    S3_supply_resource_logistics -- "data_stream (AMQP)" <--> S5_central_command_core
+    S3_supply_resource_logistics -- "event_notification (MQTT)" --> S5_central_command_core
+    S4_personnel_orchestration -- "event_notification (Tcp)" <--> S5_central_command_core
     S4_personnel_orchestration -- "event_notification (Tcp)" --> externalSystems
     S5_central_command_core -- "control_command (gRPC)" --> S2_early_warning_notification
-    S2_early_warning_notification -- "event_notification (AMQP)" --> S5_central_command_core
-    S5_central_command_core -- "data_stream (AMQP)" --> S3_supply_resource_logistics
-    S3_supply_resource_logistics -- "data_stream (AMQP)" --> S5_central_command_core
-    S3_supply_resource_logistics -- "event_notification (MQTT)" --> S5_central_command_core
-    S2_early_warning_notification -- "data_stream (REST)" --> S5_central_command_core
-    S2_early_warning_notification -- "data_stream (REST)" --> S5_central_command_core
-    S2_early_warning_notification -- "control_command (gRPC)" --> S3_supply_resource_logistics
-    S2_early_warning_notification -- "data_stream (REST)" --> S5_central_command_core
+    externalSystems -- "data_stream (Http)" --> S4_personnel_orchestration
 ```
 
 ## Subsystem: S1_data_acquisition_edge
