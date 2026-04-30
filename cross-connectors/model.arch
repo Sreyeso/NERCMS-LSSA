@@ -97,8 +97,11 @@ connector event_notification S4_personnel_orchestration.BrokerOut -> externalSys
   }
   // From system 3
   connector data_stream S3_supply_resource_logistics.api-gateway -> S5_central_command_core.Rec_Logistica {
-    style=MessageQueue  protocol=AMQP
-    timeout_ms=1000  encrypted=true  rate_limit=200
+    style = RequestResponse 
+    protocol = REST 
+    encrypted = true 
+    rate_limit = 100
+    timeout_ms = 20000
   }
   connector event_notification S3_supply_resource_logistics.stock-ms -> S5_central_command_core.S3_Message_Queue {
     style = Pub/Sub 
