@@ -59,7 +59,7 @@ connector event_notification S4_personnel_orchestration.BrokerOut -> S5_central_
 }
 
 // S3 -> S4 : Confirmaciones asignación + estado entregas (eventos)
-connector event_notification S3_supply_resource_logistics.allocation_ms -> S4_personnel_orchestration { 
+connector event_notification S3_supply_resource_logistics.allocation_ms -> S4_personnel_orchestration.BrokerIn { 
     style = Pub/Sub 
     protocol = MQTT 
     timeout_ms = 15000
