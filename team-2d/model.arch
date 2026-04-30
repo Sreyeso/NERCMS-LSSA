@@ -70,7 +70,7 @@ subsystem S5_central_command_core {
       performance=realtime    security=restricted
       port=8090
     }
-    component Rec_Alertas : communication interface {
+    component Rec_Alertas : communication event_broker {
       availability=critical   recoverability=fast
       performance=realtime    security=restricted
       port=8091
@@ -84,6 +84,16 @@ subsystem S5_central_command_core {
       availability=high       recoverability=normal
       performance=interactive  security=restricted
       port=8093
+    }
+    component Rec_Alertas_Journal : communication interface {
+      availability=critical   recoverability=fast
+      performance=realtime    security=restricted
+      port=8097
+    }
+    component Rec_Alertas_Journal_Approval : communication interface {
+      availability=critical   recoverability=fast
+      performance=realtime    security=restricted
+      port=8098
     }
 
     // ── Communication tier – Message Brokers ──────────────────────
@@ -147,6 +157,12 @@ subsystem S5_central_command_core {
     connector event_notification Rec_Alertas -> Procesador_Central {
       style=MessageQueue  protocol=AMQP  timeout_ms=300
     }
+    connector data_stream Rec_Alertas_Journal -> Procesador_Central {
+      style=RequestResponse  protocol=AMQP  timeout_ms=300
+    }
+    connector data_stream Rec_Alertas_Journal_Approval -> Procesador_Central {
+      style=RequestResponse  protocol=AMQP  timeout_ms=300
+    }
     connector data_stream Rec_Logistica -> Procesador_Central {
       style=RequestResponse  protocol=gRPC  timeout_ms=300
     }
@@ -156,7 +172,7 @@ subsystem S5_central_command_core {
     connector event_notification Health_Probe -> Procesador_Central {
       style=RequestResponse   protocol=REST   timeout_ms=300
     }
-    connector event_notification  Procesador_Central - > Health_Probe{
+    connector event_notification  Procesador_Central -> Health_Probe{
       style=RequestResponse   protocol=REST   timeout_ms=300
     }
   }

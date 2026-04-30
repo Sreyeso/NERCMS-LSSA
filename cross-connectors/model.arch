@@ -88,26 +88,26 @@ connector event_notification S4_personnel_orchestration.BrokerOut -> externalSys
   }
 
   // To system 3 (logística)
-  connector data_stream S5_central_command_core.Emisor_Logistica -> S3_supply_resource_logistics.api-gateway {
+  connector data_stream S5_central_command_core.Emisor_Logistica -> S3_supply_resource_logistics.api_gateway {
     style = RequestResponse 
-    protocol = REST 
+    protocol = REST
+    timeout_ms = 15000
     encrypted = true 
     rate_limit = 500
-    timeout_ms = 15000
   }
   // From system 3
-  connector data_stream S3_supply_resource_logistics.api-gateway -> S5_central_command_core.Rec_Logistica {
+  connector data_stream S3_supply_resource_logistics.api_gateway -> S5_central_command_core.Rec_Logistica {
     style = RequestResponse 
     protocol = REST 
+    timeout_ms = 20000
     encrypted = true 
     rate_limit = 100
-    timeout_ms = 20000
   }
-  connector event_notification S3_supply_resource_logistics.stock-ms -> S5_central_command_core.S3_Message_Queue {
+  connector event_notification S3_supply_resource_logistics.stock_ms -> S5_central_command_core.S3_Message_Queue {
     style = Pub/Sub 
     protocol = MQTT 
-    encrypted = true 
     timeout_ms = 5000
+    encrypted = true 
   }
 
   // S2 Health Check: Heartbeat_Monitor polls S5 availability
@@ -119,7 +119,7 @@ connector event_notification S4_personnel_orchestration.BrokerOut -> externalSys
   }
 
   // S2 → S5: Approval requests (Normal mode: S5 coordinates)
-  connector data_stream S2_early_warning_notification.Rules_Evaluator -> S5_central_command_core {
+  connector data_stream S2_early_warning_notification.Rules_Evaluator -> S5_central_command_core.Rec_Alertas_Journal_Approval {
     style = RequestResponse
     protocol = REST
     timeout_ms = 120000  // Abort window (can be 120s in Normal, 60s in Degraded)
@@ -136,7 +136,7 @@ connector event_notification S4_personnel_orchestration.BrokerOut -> externalSys
   }
 
   // S2 → S5 reconciliation: Journal_Drainer ships autonomous decisions on recovery
-  connector data_stream S2_early_warning_notification.Journal_Drainer -> S5_central_command_core {
+  connector data_stream S2_early_warning_notification.Journal_Drainer -> S5_central_command_core.Rec_Alertas_Journal {
     style = RequestResponse
     protocol = REST
     timeout_ms = 5000
