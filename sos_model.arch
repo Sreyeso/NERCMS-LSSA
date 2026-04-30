@@ -33,6 +33,12 @@ system_of_systems NERCMS_SoS_Global :
         encrypted=true
     }
 
+    connector data_stream S2_early_warning_notification -> S1_data_acquisition_edge {
+        style=RequestResponse
+        protocol=REST
+        encrypted=true
+    }
+
     connector event_notification S2_early_warning_notification -> S4_personnel_orchestration {
         style=MessageQueue
         protocol=Tcp
@@ -86,27 +92,26 @@ system_of_systems NERCMS_SoS_Global :
     }
 
     connector data_stream S5_central_command_core -> S3_supply_resource_logistics {
-        style=MessageQueue
-        protocol=AMQP
-        timeout_ms=1000
+        style=RequestResponse
+        protocol=REST
+        timeout_ms=15000
         encrypted=true
-        rate_limit=200
+        rate_limit=500
     }
 
     connector data_stream S3_supply_resource_logistics -> S5_central_command_core {
-        style=MessageQueue
-        protocol=AMQP
-        timeout_ms=1000
+        style=RequestResponse
+        protocol=REST
+        timeout_ms=20000
         encrypted=true
-        rate_limit=200
+        rate_limit=100
     }
 
     connector event_notification S3_supply_resource_logistics -> S5_central_command_core {
         style=Pub/Sub
         protocol=MQTT
-        timeout_ms=2000
+        timeout_ms=5000
         encrypted=true
-        rate_limit=100
     }
 
     connector data_stream S2_early_warning_notification -> S5_central_command_core {

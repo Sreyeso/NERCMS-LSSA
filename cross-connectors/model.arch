@@ -30,6 +30,12 @@ connector data_stream S5_central_command_core.Emisor_Sensores -> S1_data_acquisi
     encrypted = true
 }
 
+connector data_stream S2_early_warning_notification -> S1_data_acquisition_edge.interface { 
+    style = RequestResponse 
+    protocol = REST 
+    encrypted = true
+}
+
 // ----------------------------------------------------------
 // Conectores desde/hacia S4_personnel_orchestration
 // ----------------------------------------------------------
@@ -69,77 +75,83 @@ connector event_notification S4_personnel_orchestration.BrokerOut -> externalSys
     protocol = Tcp 
     encrypted = true 
 }
-    
 
 // ----------------------------------------------------------
 // Conectores desde/hacia S5_central_command_core
 // ----------------------------------------------------------
 
-
 // To system 2 (alertas → crítico, cifrado obligatorio)
-  connector control_command S5_central_command_core.Emisor_Alertas -> S2_early_warning_notification.Rec_Alertas {
-    style=RequestResponse  protocol=gRPC
-    timeout_ms=200  encrypted=true  rate_limit=500
-  }
-  // From system 2
-  connector event_notification S2_early_warning_notification.Emisor_Alertas -> S5_central_command_core.Rec_Alertas {
-    style=MessageQueue  protocol=AMQP
-    timeout_ms=300  encrypted=true  rate_limit=500
-  }
+connector control_command S5_central_command_core.Emisor_Alertas -> S2_early_warning_notification.Rec_Alertas {
+    style=RequestResponse  
+    protocol=gRPC
+    timeout_ms=200  
+    encrypted=true  
+    rate_limit=500
+}
 
-  // To system 3 (logística)
-  connector data_stream S5_central_command_core.Emisor_Logistica -> S3_supply_resource_logistics.api_gateway {
+// From system 2
+connector event_notification S2_early_warning_notification.Emisor_Alertas -> S5_central_command_core.Rec_Alertas {
+    style=MessageQueue  
+    protocol=AMQP
+    timeout_ms=300  
+    encrypted=true  
+    rate_limit=500
+}
+
+// To system 3 (logística)
+connector data_stream S5_central_command_core.Emisor_Logistica -> S3_supply_resource_logistics.api_gateway {
     style = RequestResponse 
     protocol = REST
     timeout_ms = 15000
     encrypted = true 
     rate_limit = 500
-  }
-  // From system 3
-  connector data_stream S3_supply_resource_logistics.api_gateway -> S5_central_command_core.Rec_Logistica {
+}
+
+// From system 3
+connector data_stream S3_supply_resource_logistics.api_gateway -> S5_central_command_core.Rec_Logistica {
     style = RequestResponse 
     protocol = REST 
     timeout_ms = 20000
     encrypted = true 
     rate_limit = 100
-  }
-  connector event_notification S3_supply_resource_logistics.stock_ms -> S5_central_command_core.S3_Message_Queue {
+}
+
+connector event_notification S3_supply_resource_logistics.stock_ms -> S5_central_command_core.S3_Message_Queue {
     style = Pub/Sub 
     protocol = MQTT 
     timeout_ms = 5000
     encrypted = true 
-  }
+}
 
-  // S2 Health Check: Heartbeat_Monitor polls S5 availability
-  connector data_stream S2_early_warning_notification.Heartbeat_Monitor -> S5_central_command_core.Health_Probe {
+// S2 Health Check: Heartbeat_Monitor polls S5 availability
+connector data_stream S2_early_warning_notification.Heartbeat_Monitor -> S5_central_command_core.Health_Probe {
     style = RequestResponse
     protocol = REST
     timeout_ms = 500
     encrypted = true
-  }
+}
 
-  // S2 → S5: Approval requests (Normal mode: S5 coordinates)
-  connector data_stream S2_early_warning_notification.Rules_Evaluator -> S5_central_command_core.Rec_Alertas_Journal_Approval {
+// S2 → S5: Approval requests (Normal mode: S5 coordinates)
+connector data_stream S2_early_warning_notification.Rules_Evaluator -> S5_central_command_core.Rec_Alertas_Journal_Approval {
     style = RequestResponse
     protocol = REST
     timeout_ms = 120000  // Abort window (can be 120s in Normal, 60s in Degraded)
     encrypted = true
-  }
+}
 
-  // S2 → S3 fallback (Autonomous mode): mutually authenticated direct channel
-  connector control_command S2_early_warning_notification.Emisor_Logistica -> S3_supply_resource_logistics {
+// S2 → S3 fallback (Autonomous mode): mutually authenticated direct channel
+connector control_command S2_early_warning_notification.Emisor_Logistica -> S3_supply_resource_logistics {
     style = RequestResponse
     protocol = gRPC
     timeout_ms = 500
     encrypted = true
     rate_limit = 200
-  }
+}
 
-  // S2 → S5 reconciliation: Journal_Drainer ships autonomous decisions on recovery
-  connector data_stream S2_early_warning_notification.Journal_Drainer -> S5_central_command_core.Rec_Alertas_Journal {
+// S2 → S5 reconciliation: Journal_Drainer ships autonomous decisions on recovery
+connector data_stream S2_early_warning_notification.Journal_Drainer -> S5_central_command_core.Rec_Alertas_Journal {
     style = RequestResponse
     protocol = REST
     timeout_ms = 5000
     encrypted = true
-  }
-
+}

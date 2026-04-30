@@ -2,118 +2,190 @@ subsystem S5_central_command_core {
 
     // ── Logic tier ────────────────────────────────────────────────
     component Procesador_Central : logic microservice {
-      availability=critical   recoverability=fast
-      performance=realtime    security=restricted
-      min_replicas=3  mem_limit="4Gi" cpu_limit=2.0  tech="python-logic"  port=8200   
-      
+        availability=critical   
+        recoverability=fast
+        performance=realtime    
+        security=restricted
+        min_replicas=3  
+        mem_limit="4Gi" 
+        cpu_limit=2.0  
+        tech="python-logic"  
+        port=8200   
     }
+
     component Motor_Decisiones : logic domain_service {
-      availability=critical   recoverability=fast
-      performance=realtime    security=restricted
-      min_replicas=2  mem_limit="2Gi" cpu_limit=1.5 
-      tech="expert-system"  
+        availability=critical   
+        recoverability=fast
+        performance=realtime    
+        security=restricted
+        min_replicas=2  
+        mem_limit="2Gi" 
+        cpu_limit=1.5 
+        tech="expert-system"  
     }
+
     component Gen_Comandos : logic microservice {
-      availability=critical   recoverability=fast
-      performance=realtime    security=restricted
-      min_replicas=2 mem_limit="1Gi" cpu_limit=1.0  
-      tech="python" port=8103
+        availability=critical   
+        recoverability=fast
+        performance=realtime    
+        security=restricted
+        min_replicas=2 
+        mem_limit="1Gi" 
+        cpu_limit=1.0  
+        tech="python" 
+        port=8103
     }
 
     // ── Data tier ─────────────────────────────────────────────────
     component BD_Operacional : data database {
-      availability=critical   recoverability=fast
-      performance=interactive  security=restricted
-      min_replicas=2    mem_limit="8Gi"    cpu_limit=2.0   
-      tech="postgresql"  port=5432
+        availability=critical   
+        recoverability=fast
+        performance=interactive  
+        security=restricted
+        min_replicas=2    
+        mem_limit="8Gi"    
+        cpu_limit=2.0   
+        tech="postgresql"  
+        port=5432
     }
+
     component Historial : data database {
-      availability=high       recoverability=normal
-      performance=batch       security=restricted
-      min_replicas=1 mem_limit="4Gi" cpu_limit=1.0   
-      tech="mongodb"  port=27017
+        availability=high       
+        recoverability=normal
+        performance=batch       
+        security=restricted
+        min_replicas=1 
+        mem_limit="4Gi" 
+        cpu_limit=1.0   
+        tech="mongodb"  
+        port=27017
     }
 
     // ── Presentation tier ─────────────────────────────────────────
     component Interfaz_Usuario : presentation dashboard {
-      availability=standard       recoverability=normal
-      performance=interactive  security=internal
-      min_replicas=2   mem_limit="512Mi"   cpu_limit=0.5   
-      tech="react"  port=3000
+        availability=standard       
+        recoverability=normal
+        performance=interactive  
+        security=internal
+        min_replicas=2   
+        mem_limit="512Mi"   
+        cpu_limit=0.5   
+        tech="react"  
+        port=3000
     }
 
     // ── Communication tier – Emitters ─────────────────────────────
     component Emisor_Sensores : communication interface {
-      availability=critical   recoverability=fast
-      performance=realtime    security=restricted
-      port=8080
+        availability=critical   
+        recoverability=fast
+        performance=realtime    
+        security=restricted
+        port=8080
     }
+
     component Emisor_Alertas : communication interface {
-      availability=critical   recoverability=fast
-      performance=realtime    security=restricted
-      port=8081
+        availability=critical   
+        recoverability=fast
+        performance=realtime    
+        security=restricted
+        port=8081
     }
+
     component Emisor_Logistica : communication interface {
-      availability=high       recoverability=fast
-      performance=interactive  security=restricted
-      port=8082
+        availability=high       
+        recoverability=fast
+        performance=interactive  
+        security=restricted
+        port=8082
     }
+
     component Emisor_Personal : communication interface {
-      availability=high       recoverability=normal
-      performance=interactive  security=restricted
-      port=8083
+        availability=high       
+        recoverability=normal
+        performance=interactive  
+        security=restricted
+        port=8083
     }
 
     // ── Communication tier – Receivers ────────────────────────────
     component Rec_Sensores : communication interface {
-      availability=critical   recoverability=fast
-      performance=realtime    security=restricted
-      port=8090
+        availability=critical   
+        recoverability=fast
+        performance=realtime    
+        security=restricted
+        port=8090
     }
+
     component Rec_Alertas : communication event_broker {
-      availability=critical   recoverability=fast
-      performance=realtime    security=restricted
-      port=8091
+        availability=critical   
+        recoverability=fast
+        performance=realtime    
+        security=restricted
+        port=8091
     }
+
     component Rec_Logistica : communication interface {
-      availability=high       recoverability=fast
-      performance=interactive  security=restricted
-      port=8092
+        availability=high       
+        recoverability=fast
+        performance=interactive  
+        security=restricted
+        port=8092
     }
+
     component Rec_Personal : communication interface {
-      availability=high       recoverability=normal
-      performance=interactive  security=restricted
-      port=8093
+        availability=high       
+        recoverability=normal
+        performance=interactive  
+        security=restricted
+        port=8093
     }
+
     component Rec_Alertas_Journal : communication interface {
-      availability=critical   recoverability=fast
-      performance=realtime    security=restricted
-      port=8097
+        availability=critical   
+        recoverability=fast
+        performance=realtime    
+        security=restricted
+        port=8097
     }
+
     component Rec_Alertas_Journal_Approval : communication interface {
-      availability=critical   recoverability=fast
-      performance=realtime    security=restricted
-      port=8098
+        availability=critical   
+        recoverability=fast
+        performance=realtime    
+        security=restricted
+        port=8098
     }
 
     // ── Communication tier – Message Brokers ──────────────────────
     component S1_Message_Queue : communication event_broker {
-      availability=critical   recoverability=fast
-      performance=realtime    security=restricted
-      min_replicas=2   mem_limit="2Gi"  cpu_limit=1.0
-      port=8094   
+        availability=critical   
+        recoverability=fast
+        performance=realtime    
+        security=restricted
+        min_replicas=2   
+        mem_limit="2Gi"  
+        cpu_limit=1.0
+        port=8094   
     }
+
     component S3_Message_Queue : communication event_broker {
-      availability=high       recoverability=fast
-      performance=interactive  security=restricted
-      min_replicas=1   mem_limit="1Gi"  cpu_limit=0.5
-      port=8096
+        availability=high       
+        recoverability=fast
+        performance=interactive 
+        security=restricted
+        min_replicas=1   
+        mem_limit="1Gi"  
+        cpu_limit=0.5
+        port=8096
     }
 
     component Health_Probe: communication microservice {
-        availability=high       recoverability=fast
-        performance=realtime security=internal
-        mem_limit="50Mi"  cpu_limit=0.1
+        availability=high       
+        recoverability=fast
+        performance=realtime 
+        security=internal
+        mem_limit="50Mi"  
+        cpu_limit=0.1
         port=8100
     }
 
@@ -123,58 +195,105 @@ subsystem S5_central_command_core {
     connector control_command Procesador_Central -> Motor_Decisiones
 
     connector data_stream BD_Operacional -> Motor_Decisiones {
-      style=RequestResponse  protocol=gRPC  timeout_ms=200
+        style=RequestResponse  
+        protocol=gRPC  
+        timeout_ms=200
     }
+
     connector data_stream Motor_Decisiones -> Interfaz_Usuario {
-      style=RequestResponse  protocol=Http  timeout_ms=500
+        style=RequestResponse  
+        protocol=Http  
+        timeout_ms=500
     }
+
     connector control_command Motor_Decisiones -> Gen_Comandos {
-      style=RequestResponse  protocol=gRPC  timeout_ms=100
+        style=RequestResponse  
+        protocol=gRPC  
+        timeout_ms=100
     }
 
     connector control_command Gen_Comandos -> Emisor_Sensores {
-      style=RequestResponse  protocol=gRPC  timeout_ms=100
+        style=RequestResponse  
+        protocol=gRPC  
+        timeout_ms=100
     }
+
     connector control_command Gen_Comandos -> Emisor_Alertas {
-      style=RequestResponse  protocol=gRPC  timeout_ms=100
+        style=RequestResponse  
+        protocol=gRPC  
+        timeout_ms=100
     }
+
     connector control_command Gen_Comandos -> Emisor_Logistica {
-      style=RequestResponse  protocol=gRPC  timeout_ms=150
+        style=RequestResponse  
+        protocol=gRPC  
+        timeout_ms=150
     }
+
     connector control_command Gen_Comandos -> Emisor_Personal {
-      style=RequestResponse  protocol=gRPC  timeout_ms=150
+        style=RequestResponse  
+        protocol=gRPC  
+        timeout_ms=150
     }
 
     connector event_notification S1_Message_Queue -> Procesador_Central {
-      style=MessageQueue  protocol=AMQP  timeout_ms=500
+        style=MessageQueue  
+        protocol=AMQP  
+        timeout_ms=500
     }
-    connector event_notification S3_Message_Queue -> Procesador_Central {
-      style=MessageQueue  protocol=AMQP  timeout_ms=500
-    }
-    connector data_stream Rec_Sensores -> Procesador_Central {
-      style=RequestResponse  protocol=gRPC  timeout_ms=100
-    }
-    connector event_notification Rec_Alertas -> Procesador_Central {
-      style=MessageQueue  protocol=AMQP  timeout_ms=300
-    }
-    connector data_stream Rec_Alertas_Journal -> Procesador_Central {
-      style=RequestResponse  protocol=AMQP  timeout_ms=300
-    }
-    connector data_stream Rec_Alertas_Journal_Approval -> Procesador_Central {
-      style=RequestResponse  protocol=AMQP  timeout_ms=300
-    }
-    connector data_stream Rec_Logistica -> Procesador_Central {
-      style=RequestResponse  protocol=gRPC  timeout_ms=300
-    }
-    connector data_stream Rec_Personal -> Procesador_Central {
-      style=RequestResponse  protocol=gRPC  timeout_ms=300
-    }
-    connector event_notification Health_Probe -> Procesador_Central {
-      style=RequestResponse   protocol=REST   timeout_ms=300
-    }
-    connector event_notification  Procesador_Central -> Health_Probe{
-      style=RequestResponse   protocol=REST   timeout_ms=300
-    }
-  }
 
-  
+    connector event_notification S3_Message_Queue -> Procesador_Central {
+        style=MessageQueue  
+        protocol=AMQP  
+        timeout_ms=500
+    }
+
+    connector data_stream Rec_Sensores -> Procesador_Central {
+        style=RequestResponse  
+        protocol=gRPC  
+        timeout_ms=100
+    }
+
+    connector event_notification Rec_Alertas -> Procesador_Central {
+        style=MessageQueue  
+        protocol=AMQP  
+        timeout_ms=300
+    }
+
+    connector data_stream Rec_Alertas_Journal -> Procesador_Central {
+        style=RequestResponse  
+        protocol=AMQP  
+        timeout_ms=300
+    }
+
+    connector data_stream Rec_Alertas_Journal_Approval -> Procesador_Central {
+        style=RequestResponse  
+        protocol=AMQP  
+        timeout_ms=300
+    }
+
+    connector data_stream Rec_Logistica -> Procesador_Central {
+        style=RequestResponse 
+        protocol=gRPC  
+        timeout_ms=300
+    }
+
+    connector data_stream Rec_Personal -> Procesador_Central {
+        style=RequestResponse  
+        protocol=gRPC  
+        timeout_ms=300
+    }
+
+    connector event_notification Health_Probe -> Procesador_Central {
+        style=RequestResponse   
+        protocol=REST   
+        timeout_ms=300
+    }
+
+    connector event_notification  Procesador_Central -> Health_Probe{
+        style=RequestResponse   
+        protocol=REST   
+        timeout_ms=300
+    }
+
+}

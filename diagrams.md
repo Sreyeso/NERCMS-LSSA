@@ -4,32 +4,28 @@
 
 ```mermaid
 graph LR
-    S1_data_acquisition_edge[[S1_data_acquisition_edge]]
-    S2_early_warning_notification[[S2_early_warning_notification]]
-    S3_supply_resource_logistics[[S3_supply_resource_logistics]]
-    S4_personnel_orchestration[[S4_personnel_orchestration]]
-    externalSystems[[externalSystems]]
-    S5_central_command_core[[S5_central_command_core]]
+    S1_data_acquisition_edge[S1_data_acquisition_edge]
+    S2_early_warning_notification[S2_early_warning_notification]
+    S3_supply_resource_logistics[S3_supply_resource_logistics]
+    S4_personnel_orchestration[S4_personnel_orchestration]
+    externalSystems[externalSystems]
+    S5_central_command_core[S5_central_command_core]
 
     S1_data_acquisition_edge -- "event_notification (AMQP)" --> S2_early_warning_notification
+    S1_data_acquisition_edge -- "data_stream (REST)" <--> S5_central_command_core
     S1_data_acquisition_edge -- "event_notification (AMQP)" --> S5_central_command_core
-    S1_data_acquisition_edge -- "data_stream (REST)" --> S5_central_command_core
-    S5_central_command_core -- "data_stream (REST)" --> S1_data_acquisition_edge
+    S2_early_warning_notification -- "data_stream (REST)" --> S1_data_acquisition_edge
+    S2_early_warning_notification -- "control_command (gRPC)" --> S3_supply_resource_logistics
     S2_early_warning_notification -- "event_notification (Tcp)" --> S4_personnel_orchestration
-    S5_central_command_core -- "event_notification (Tcp)" --> S4_personnel_orchestration
-    S4_personnel_orchestration -- "event_notification (Tcp)" --> S5_central_command_core
+    S2_early_warning_notification -- "3x data_stream (REST)" --> S5_central_command_core
+    S2_early_warning_notification -- "event_notification (AMQP)" --> S5_central_command_core
     S3_supply_resource_logistics -- "event_notification (Tcp)" --> S4_personnel_orchestration
-    externalSystems -- "data_stream (Http)" --> S4_personnel_orchestration
+    S3_supply_resource_logistics -- "data_stream (REST)" <--> S5_central_command_core
+    S3_supply_resource_logistics -- "event_notification (MQTT)" --> S5_central_command_core
+    S4_personnel_orchestration -- "event_notification (Tcp)" <--> S5_central_command_core
     S4_personnel_orchestration -- "event_notification (Tcp)" --> externalSystems
     S5_central_command_core -- "control_command (gRPC)" --> S2_early_warning_notification
-    S2_early_warning_notification -- "event_notification (AMQP)" --> S5_central_command_core
-    S5_central_command_core -- "data_stream (AMQP)" --> S3_supply_resource_logistics
-    S3_supply_resource_logistics -- "data_stream (AMQP)" --> S5_central_command_core
-    S3_supply_resource_logistics -- "event_notification (MQTT)" --> S5_central_command_core
-    S2_early_warning_notification -- "data_stream (REST)" --> S5_central_command_core
-    S2_early_warning_notification -- "data_stream (REST)" --> S5_central_command_core
-    S2_early_warning_notification -- "control_command (gRPC)" --> S3_supply_resource_logistics
-    S2_early_warning_notification -- "data_stream (REST)" --> S5_central_command_core
+    externalSystems -- "data_stream (Http)" --> S4_personnel_orchestration
 ```
 
 ## Subsystem: S1_data_acquisition_edge
@@ -263,11 +259,14 @@ graph LR
             Emisor_Logistica["Emisor_Logistica<br/>(interface)"]
             Emisor_Personal["Emisor_Personal<br/>(interface)"]
             Rec_Sensores["Rec_Sensores<br/>(interface)"]
-            Rec_Alertas["Rec_Alertas<br/>(interface)"]
+            Rec_Alertas["Rec_Alertas<br/>(event_broker)"]
             Rec_Logistica["Rec_Logistica<br/>(interface)"]
             Rec_Personal["Rec_Personal<br/>(interface)"]
+            Rec_Alertas_Journal["Rec_Alertas_Journal<br/>(interface)"]
+            Rec_Alertas_Journal_Approval["Rec_Alertas_Journal_Approval<br/>(interface)"]
             S1_Message_Queue["S1_Message_Queue<br/>(event_broker)"]
             S3_Message_Queue["S3_Message_Queue<br/>(event_broker)"]
+            Health_Probe["Health_Probe<br/>(microservice)"]
         end
         subgraph S5_central_command_core_undefined_logic[logic]
             Procesador_Central["Procesador_Central<br/>(microservice)"]
@@ -293,7 +292,11 @@ graph LR
     S3_Message_Queue -- "event_notification (AMQP)" --> Procesador_Central
     Rec_Sensores -- "data_stream (gRPC)" --> Procesador_Central
     Rec_Alertas -- "event_notification (AMQP)" --> Procesador_Central
+    Rec_Alertas_Journal -- "data_stream (AMQP)" --> Procesador_Central
+    Rec_Alertas_Journal_Approval -- "data_stream (AMQP)" --> Procesador_Central
     Rec_Logistica -- "data_stream (gRPC)" --> Procesador_Central
     Rec_Personal -- "data_stream (gRPC)" --> Procesador_Central
+    Health_Probe -- "event_notification (REST)" --> Procesador_Central
+    Procesador_Central -- "event_notification (REST)" --> Health_Probe
     end
 ```
