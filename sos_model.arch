@@ -58,8 +58,9 @@ system_of_systems NERCMS_SoS_Global :
     }
 
     connector event_notification S3_supply_resource_logistics -> S4_personnel_orchestration {
-        style=MessageQueue
-        protocol=Tcp
+        style=Pub/Sub
+        protocol=MQTT
+        timeout_ms=15000
         encrypted=true
     }
 
