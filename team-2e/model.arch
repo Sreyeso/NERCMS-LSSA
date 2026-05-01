@@ -354,6 +354,18 @@ subsystem S1_data_acquisition_edge {
 
     // ------- API Gateway → servicios -------
 
+    connector data_stream edge_ag -> data_ingestion_ms {
+        style = RequestResponse
+        protocol = REST
+        encrypted = true
+    }
+
+    connector data_stream edge_ag -> data_standardization_ms {
+        style = RequestResponse
+        protocol = REST
+        encrypted = true
+    }
+
     connector data_stream edge_ag -> reporting_ms {
         style = RequestResponse
         protocol = REST

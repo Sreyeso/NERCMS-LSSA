@@ -88,6 +88,8 @@ graph LR
     camera -- "data_stream (RTSP)" --> data_ingestion_ms
     data_ingestion_ms -- "event_notification (AMQP)" --> notification_mb
     notification_mb -- "event_notification (AMQP)" --> data_standardization_ms
+    edge_ag -- "data_stream (REST)" --> data_ingestion_ms
+    edge_ag -- "data_stream (REST)" --> data_standardization_ms
     edge_ag -- "data_stream (REST)" --> reporting_ms
     edge_ag -- "data_stream (REST)" --> logging_ms
     data_ingestion_ms -- "dependency (Tcp)" --> raw_data_db
@@ -286,7 +288,7 @@ graph LR
     Motor_Decisiones -- "control_command (gRPC)" --> Gen_Comandos
     Gen_Comandos -- "control_command (gRPC)" --> Emisor_Sensores
     Gen_Comandos -- "control_command (gRPC)" --> Emisor_Alertas
-    Gen_Comandos -- "control_command (gRPC)" --> Emisor_Logistica
+    Gen_Comandos -- "control_command (AMQP)" --> Emisor_Logistica
     Gen_Comandos -- "control_command (gRPC)" --> Emisor_Personal
     S1_Message_Queue -- "event_notification (AMQP)" --> Procesador_Central
     S3_Message_Queue -- "event_notification (AMQP)" --> Procesador_Central

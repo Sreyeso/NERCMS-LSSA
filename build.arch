@@ -360,6 +360,18 @@ system_of_systems NERCMS_SoS :
 
         // ------- API Gateway → servicios -------
 
+        connector data_stream edge_ag -> data_ingestion_ms {
+            style = RequestResponse
+            protocol = REST
+            encrypted = true
+        }
+
+        connector data_stream edge_ag -> data_standardization_ms {
+            style = RequestResponse
+            protocol = REST
+            encrypted = true
+        }
+
         connector data_stream edge_ag -> reporting_ms {
             style = RequestResponse
             protocol = REST
@@ -1241,14 +1253,14 @@ system_of_systems NERCMS_SoS :
 
         connector control_command Gen_Comandos -> Emisor_Logistica {
             style=RequestResponse  
-            protocol=gRPC  
+            protocol=AMQP
             timeout_ms=150
         }
 
         connector control_command Gen_Comandos -> Emisor_Personal {
-            style=RequestResponse  
+            style=MessageQueue  
             protocol=gRPC  
-            timeout_ms=150
+            timeout_ms=500
         }
 
         connector event_notification S1_Message_Queue -> Procesador_Central {
