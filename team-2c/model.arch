@@ -28,7 +28,7 @@ subsystem S3_supply_resource_logistics {
         recoverability = fast 
         performance = interactive 
         security = restricted 
-        max_replicas = 3
+        min_replicas = 3
     }
 
     component allocation_ms: logic microservice { 
