@@ -172,6 +172,7 @@ graph LR
     subgraph S3_supply_resource_logistics
         subgraph S3_supply_resource_logistics_undefined_communication[communication]
             api_gateway["api_gateway<br/>(api_gateway)"]
+            internal_lb["internal_lb<br/>(load_balancer)"]
             fifo_queue["fifo_queue<br/>(event_broker)"]
         end
         subgraph S3_supply_resource_logistics_undefined_logic[logic]
@@ -188,10 +189,11 @@ graph LR
             distributed_nodes["distributed_nodes<br/>(external_agency)"]
         end
 
-    api_gateway -- "data_stream (REST)" --> sync_ms
-    api_gateway -- "data_stream (REST)" --> allocation_ms
-    api_gateway -- "data_stream (REST)" --> stock_ms
-    api_gateway -- "data_stream (REST)" --> concurrence_ms
+    api_gateway -- "data_stream (REST)" --> internal_lb
+    internal_lb -- "data_stream (REST)" --> sync_ms
+    internal_lb -- "data_stream (REST)" --> allocation_ms
+    internal_lb -- "data_stream (REST)" --> stock_ms
+    internal_lb -- "data_stream (REST)" --> concurrence_ms
     allocation_ms -- "dependency (Tcp)" --> allocation_db
     stock_ms -- "dependency (Tcp)" --> stock_db
     api_gateway -- "data_stream (AMQP)" --> fifo_queue

@@ -767,13 +767,23 @@ system_of_systems NERCMS_SoS :
     // =============================================================
 
     subsystem S3_supply_resource_logistics {
+
         // Communication
+        
         component api_gateway: communication api_gateway { 
             availability = critical 
             recoverability = fast 
             performance = realtime 
             auth = token 
             security = public
+        }
+
+        component internal_lb: communication load_balancer {
+            availability = critical
+            recoverability = fast
+            performance = realtime 
+            security = internal 
+            min_replicas = 2 
         }
 
         component fifo_queue: communication event_broker { 
@@ -784,12 +794,13 @@ system_of_systems NERCMS_SoS :
         }
 
         // Microservicios
+        
         component sync_ms: logic microservice { 
             availability = high 
             recoverability = fast 
             performance = interactive 
             security = restricted 
-            max_replicas = 3
+            min_replicas = 3
         }
 
         component allocation_ms: logic microservice { 
@@ -817,6 +828,7 @@ system_of_systems NERCMS_SoS :
         }
 
         // DBs
+        
         component allocation_db: data database { 
             availability = high 
             recoverability = normal 
@@ -832,6 +844,7 @@ system_of_systems NERCMS_SoS :
         }
 
         // External distributed logistics nodes
+        
         component distributed_nodes: external external_agency { 
             availability = critical 
             recoverability = fast 
@@ -841,32 +854,41 @@ system_of_systems NERCMS_SoS :
         }
 
         // Connectors
-        // api -> logic
-        connector data_stream api_gateway -> sync_ms { 
+        
+        // api_gateway -> lb -> ms
+
+        connector data_stream api_gateway -> internal_lb { 
+            style = RequestResponse 
+            protocol = REST 
+            encrypted = true 
+        }
+        
+        connector data_stream internal_lb -> sync_ms { 
+            style = RequestResponse 
+            protocol = REST 
+            encrypted = true 
+        }
+        
+        connector data_stream internal_lb -> allocation_ms { 
             style = RequestResponse 
             protocol = REST 
             encrypted = true 
         }
 
-        connector data_stream api_gateway -> allocation_ms { 
+       connector data_stream internal_lb -> stock_ms { 
             style = RequestResponse 
             protocol = REST 
             encrypted = true 
         }
-
-        connector data_stream api_gateway -> stock_ms { 
+        
+        connector data_stream internal_lb -> concurrence_ms { 
             style = RequestResponse 
             protocol = REST 
             encrypted = true 
         }
-
-        connector data_stream api_gateway -> concurrence_ms { 
-            style = RequestResponse 
-            protocol = REST 
-            encrypted = true 
-        }
-
+        
         // logic -> data
+
         connector dependency allocation_ms -> allocation_db { 
             style = RequestResponse 
             protocol = Tcp 
@@ -880,6 +902,7 @@ system_of_systems NERCMS_SoS :
         }
 
         // api -> queue -> logic
+
         connector data_stream api_gateway -> fifo_queue { 
             style = MessageQueue 
             protocol = AMQP 
@@ -902,6 +925,7 @@ system_of_systems NERCMS_SoS :
         }
 
         // logic -> external
+
         connector control_command distributed_nodes -> concurrence_ms { 
             style = RequestResponse 
             protocol = gRPC 
