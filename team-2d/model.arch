@@ -226,14 +226,14 @@ subsystem S5_central_command_core {
 
     connector control_command Gen_Comandos -> Emisor_Logistica {
         style=RequestResponse  
-        protocol=gRPC  
+        protocol=AMQP
         timeout_ms=150
     }
 
     connector control_command Gen_Comandos -> Emisor_Personal {
-        style=RequestResponse  
+        style=MessageQueue  
         protocol=gRPC  
-        timeout_ms=150
+        timeout_ms=500
     }
 
     connector event_notification S1_Message_Queue -> Procesador_Central {
