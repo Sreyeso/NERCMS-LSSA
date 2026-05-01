@@ -19,7 +19,7 @@ graph LR
     S2_early_warning_notification -- "event_notification (Tcp)" --> S4_personnel_orchestration
     S2_early_warning_notification -- "3x data_stream (REST)" --> S5_central_command_core
     S2_early_warning_notification -- "event_notification (AMQP)" --> S5_central_command_core
-    S3_supply_resource_logistics -- "event_notification (Tcp)" --> S4_personnel_orchestration
+    S3_supply_resource_logistics -- "event_notification (MQTT)" --> S4_personnel_orchestration
     S3_supply_resource_logistics -- "data_stream (REST)" <--> S5_central_command_core
     S3_supply_resource_logistics -- "event_notification (MQTT)" --> S5_central_command_core
     S4_personnel_orchestration -- "event_notification (Tcp)" <--> S5_central_command_core
