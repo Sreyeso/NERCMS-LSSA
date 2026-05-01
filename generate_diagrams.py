@@ -1,3 +1,4 @@
+from collections import defaultdict
 from textx import metamodel_from_file
 from textx.scoping.providers import FQN
 
@@ -34,10 +35,12 @@ def generate_diagrams():
     
     for sub in subsystems:
         sid = safe_id(sub.name)
-        lines.append(f"    {sid}[[{sub.name}]]")
+        lines.append(f"    {sid}[{sub.name}]")
 
     lines.append("")
     
+    edge_counter = defaultdict(int)
+
     global_connectors = [e for e in model.elements if e.__class__.__name__ == 'CrossConnector']
     for c in global_connectors:
         src_node = getattr(c, 'from')
@@ -48,12 +51,48 @@ def generate_diagrams():
         
         if src_sub and dst_sub:
             label = c.type
+
             if getattr(c, 'properties', None) and getattr(c.properties, 'protocol', None):
-                label += f" ({c.properties.protocol})"
+                label += f" ({c.properties.protocol.strip()})"
             
+            key = (src_sub, dst_sub, label)
+            edge_counter[key] += 1
+
+    processed = set()
+
+    # render
+    for (src, dst, label), count in sorted(edge_counter.items()):
+        if (src, dst, label) in processed:
+            continue
+
+        reverse_key = (dst, src, label)
+
+        # Caso bidireccional (ambos conectores existen con el mismo label)
+        if reverse_key in edge_counter and edge_counter[reverse_key] == count:
+            if count > 1:
+                label_with_count = f"{count}x {label}"
+            else:
+                label_with_count = label
+
             lines.append(
-                f"    {safe_id(src_sub)} -- \"{label}\" --> {safe_id(dst_sub)}"
+                f"    {safe_id(src)} -- \"{label_with_count}\" <--> {safe_id(dst)}"
             )
+
+            processed.add((src, dst, label))
+            processed.add(reverse_key)
+
+        else:
+            # unidireccional normal
+            if count > 1:
+                label_with_count = f"{count}x {label}"
+            else:
+                label_with_count = label
+
+            lines.append(
+                f"    {safe_id(src)} -- \"{label_with_count}\" --> {safe_id(dst)}"
+            )
+
+            processed.add((src, dst, label))
 
     lines.append("```\n")
 
